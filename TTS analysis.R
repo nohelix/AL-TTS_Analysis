@@ -440,7 +440,7 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
     return(new_df)
   }
   
-  dprimer <- function(df) {
+  dprime_calc <- function(df) {
     # print(df)
     dprime(n_hit = df$Hit,
            n_fa = df$FA,
@@ -467,7 +467,7 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
       group_by(ID, Sex, Condition, Stim, BG_Type, BG_Intensity, `Dur (ms)`) %>% #print
       nest() %>%
       mutate(dprime_data = map(data, dprime_table),
-             dprime = map(dprime_data, dprimer)) %>% #print
+             dprime = map(dprime_data, dprime_calc)) %>% #print
       unnest(dprime) #%>% print
   
   TH_cutoff <- 1.5
