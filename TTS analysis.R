@@ -508,14 +508,14 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
   #             suffix = c("", ".old")) %>% print
   #   # filter(ID == "Green 1") %>% print
   
-  
-  TH %>% 
-    filter(`Dur (ms)` != "100") %>% 
-    filter(Condition %in% c("Baseline")) %>% 
-    filter(!(ID %in% HL_not_done)) %>% 
-    filter(BG_Intensity %in% c("NA", "50")) %>% 
-    # write.table("clipboard", sep="\t", row.names=FALSE) %>%
-    View
+  # For Ben Viewing
+  # TH %>% 
+  #   filter(`Dur (ms)` != "100") %>% 
+  #   filter(Condition %in% c("Baseline")) %>% 
+  #   filter(!(ID %in% HL_not_done)) %>% 
+  #   filter(BG_Intensity %in% c("NA", "50")) %>% 
+  #   # write.table("clipboard", sep="\t", row.names=FALSE) %>%
+  #   View
   
   # Average Thresholds
   Avg_TH_Condition <-
