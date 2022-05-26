@@ -146,8 +146,6 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
 # # Summary Table
 #   Thresholds <-
 #     TTS_Data %>%
-#   # Select for only Pink or no background
-#     filter(BG_Type %in% c("NA", "PNK")) %>%
 #   # Group by ID, experiment type, etc
 #     group_by(ID, Condition, BG_Type, BG_Intensity, Duration) %>%
 #   # Summarize for each individual
@@ -222,8 +220,6 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
   # Get folder and file names
   File_list <-
     TTS_Data %>%
-      # Select for only Pink or no background
-      filter(BG_Type %in% c("NA", "PNK")) %>%
       # Select date and file columns
       select(Date, File, ID, Sex, Condition, BG_Type, BG_Intensity) %>%
       # filter(Date > "2022-01-01") %>%
@@ -280,6 +276,7 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
     filter(is.na(FileName_complete)) %>%
   # .mat files from 9-22-2021 and earlier are in the old format and can not be exported currently
     filter(Date > "2021-9-22") %>%
+    arrange(Date) %>%
     View
 
   # ID files with unexpected names  
@@ -320,16 +317,16 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
   )
 
 
-  # # Sanity check that Trials and the actual line count match
-  # # NOTE: this required manually renaming a file (Orange5_Orange5_4-32kHz_MIXdB_50ms_4s_20220420-130546_BOX#001_raw_data.csv)
-  # # as the Orange5_Green5 seemed to be causing issues
-  # Raw_Data %>%
-  #   group_by(ID, Date) %>%
-  #   count() %>%
-  #   left_join(TTS_Data, ., by = c("Date", "ID")) %>% 
-  #   select(ID, Date, Trials, n) %>% 
-  #   filter(Trials != n) %>% 
-  #   View()
+  # Sanity check that Trials and the actual line count match
+  # NOTE: this required manually renaming a file (Orange5_Orange5_4-32kHz_MIXdB_50ms_4s_20220420-130546_BOX#001_raw_data.csv)
+  # as the Orange5_Green5 seemed to be causing issues
+  Raw_Data %>%
+    group_by(ID, Date) %>%
+    count() %>%
+    left_join(TTS_Data, ., by = c("Date", "ID")) %>%
+    select(ID, Date, Trials, n) %>%
+    filter(Trials != n) %>%
+    View()
   
 
 # Sample selection --------------------------------------------------------
@@ -482,18 +479,18 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
   # 3 Green 1 Male  Baseline  tone  NA      NA                   50  1.17      5 32kHz 0.327
   # 4 Green 1 Male  Baseline  tone  NA      NA                   50  1.91     10 32kHz 0.406
   
-  # TH <-
+  TH <-
     TH_data %>%
-      filter(ID == "Green 1") %>%
-      filter(Stim == "tone") %>%
-      filter(Type == "32kHz") %>% 
+      # filter(ID == "Green 1") %>%
+      # filter(Stim == "tone") %>%
+      # filter(Type == "32kHz") %>% 
       select(ID:`Dur (ms)`, dprime, dB, Type) %>% #print
       mutate(Type = fct_relevel(Type, levels = c("BBN", "4kHz", "8kHz", "16kHz", "32kHz")),
-             score = abs(dprime - TH_cutoff)) %>% print
+             score = abs(dprime - TH_cutoff)) %>% #print
       filter(score < 1) %>%
       group_by(ID, Sex, Condition, BG_Type, BG_Intensity, `Dur (ms)`, Type) %>%
       do(
-        filter(., rank(.$score) == 1 | rank(.$score) == 2) %>% print)
+        filter(., rank(.$score) == 1 | rank(.$score) == 2) %>% #print)
         summarize(TH = weighted.mean(.$dB, (1-.$score))) %>% #print
         round(., digits=0)
       ) %>%
@@ -561,7 +558,7 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
                         BG_Type == "PNK" & BG_Intensity == "50" ~ "50dB Pink Noise Background",
                         BG_Type == "WN" & BG_Intensity == "50" ~ "50dB White Noise Background",
                         TRUE ~ "ISSUE") %>% 
-              fct_relevel("Quiet", "30dB Pink Noise Background", "50dB Pink Noise Background", "50dB White Noise Background")) %>% View
+              fct_relevel("Quiet", "30dB Pink Noise Background", "50dB Pink Noise Background", "50dB White Noise Background")) %>%
     gather(Condition, dprime, "dprime_change", "Baseline", `Post HHL`)
   
 
@@ -887,11 +884,18 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
 # Plotting vars -----------------------------------------------------------
 
   Noise = "NA" #("NA", "PNK", "WN")
-  BG_dB = "NA"  #("NA", "30", "50)  
+  BG_dB = "NA"  #("NA", "30", "50)
   
   BG = case_when(Noise == "PNK" ~ "Pink Background Noise",
                  Noise == "WN" ~ "White Background Noise",
                  Noise == "NA" ~ "No Background Noise")
+  
+  # Should potentially be updated to something like this
+  # BG=case_when(BG_Type == "NA" & BG_Intensity == "NA" ~ "Quiet",
+  #              BG_Type == "PNK" & BG_Intensity == "30" ~ "30dB Pink Noise Background",
+  #              BG_Type == "PNK" & BG_Intensity == "50" ~ "50dB Pink Noise Background",
+  #              BG_Type == "WN" & BG_Intensity == "50" ~ "50dB White Noise Background",
+  #              TRUE ~ "ISSUE")
   
 # Rxn Plot ----------------------------------------------------------------
 # Plot by animal pre & post & group
