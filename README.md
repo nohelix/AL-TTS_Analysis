@@ -6,7 +6,7 @@ TTS analysis (mostly R code)
 
 **To DO**:
 change d' calculation to curve fitting (polynomial aka dose response)
-- Ben agrees this is better than the braketing fit. We will still need to see if the 10dB step vs. 5dB step lead to different numbers.
+- Ben agrees this is better than the bracketing fit. We will still need to see if the 10dB step vs. 5dB step lead to different numbers.
 -- Initial idea would be to use dcr package and fit same as 'standard curve fitting'. 
 -- Initial testing suggests that this may cause issues with other packages, namely breaks (?) read_xls_sheets
 -- Alternative dose response curve fitting packages exist including newest drda. (look into it??)
@@ -19,3 +19,4 @@ Improve code commenting & organization
 Make whole thing a function so that I can just slice the data at top then pass it to whole thing
 -- This may need to remove all but the 'core' graphs
 -- I will need to extensively document the substeps so that I can slice the correct dataframes at will
+-- When running as a funtion, make optional "Full Data Import" (i.e. clear workspace and reload up to Raw_Data)
