@@ -24,7 +24,7 @@ library(writexl);
 
 
 # Clear workspace ---------------------------------------------------------
-# rm(list = ls())
+rm(list = ls())
 
 # Global Variables --------------------------------------------------------
 
@@ -45,7 +45,7 @@ setwd(MainFolder)
 
 
 # Clean Environment & Import Data -----------------------------------------
-source("C:/Users/Noelle/Documents/GitHub/AL-TTS_Analysis/importing.R")
+source("~/GitHub/AL-TTS_Analysis/importing.R")
 
 
 # Dataset Picker ----------------------------------------------------------
