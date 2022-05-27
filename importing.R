@@ -115,7 +115,7 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
       select(Date, File, ID, Sex, Condition, BG_Type, BG_Intensity) %>%
       # filter(Date > "2022-01-01") %>%
       # Change date to same format as folder names
-      mutate(Folder = as.character.Date(Date) %>% gsub("-", "", .)) %>% print
+      mutate(Folder = as.character.Date(Date) %>% gsub("-", "", .)) #%>% print
 
   # Get EXPECTED file list
   File_list <-
