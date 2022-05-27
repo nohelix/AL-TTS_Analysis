@@ -303,7 +303,7 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
   Data_trimmedBlocks <-
     Data_no1st %>%
     filter(Blocks_trimmed >= tone_maxBlock) %>%
-    mutate(data = map(data_no1st, trimmer)) %>%
+    mutate(data = map(data, trimmer)) %>%
     unnest(data)
 
   Data_no1st <-
