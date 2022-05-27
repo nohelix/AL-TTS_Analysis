@@ -76,4 +76,45 @@ TTS_Data %>%
       legend.position = "right"                                 # hide legend
     )
 
+# Psychoacustic Graph -----------------------------------------------------
 
+
+# Calculate standard error (SE) like standard deviation (SD)
+se <- function(x, ...) {sqrt(var(x, ...)/length(x))}
+
+n_fun <- function(x){
+  # print(x)
+  return(data.frame(y = mean(x), label = paste0("n = ",length(x))))
+} 
+
+
+#General (Change by Background)
+dprime %>%
+  filter(Condition == "dprime_change") %>%
+  left_join(Avg_TH, by = c("Type", "BG_Type", "BG_Intensity")) %>%
+  # filter(Sex == "Male") %>%
+  ggplot(aes(x = dB, y = dprime, color = Type, group = Type)) +
+  geom_hline(yintercept = 0, linetype = "dashed", size = 1.2) +
+  # Add vline for each average threshold
+  geom_vline(aes(xintercept = TH, color = Type), linetype = "longdash", size = 1, show.legend = FALSE) +
+  # geom_text(aes(label=..count..), stat = "count", hjust=0, vjust=0) +
+  stat_summary(fun = mean,
+               fun.min = function(x) mean(x) - se(x),
+               fun.max = function(x) mean(x) + se(x),
+               geom = "errorbar", width = 1, position = position_dodge(1)) +
+  stat_summary(fun = mean, geom = "point", position = position_dodge(1), size = 3) +
+  stat_summary(fun = mean, geom = "line") +
+  geom_line(data = . %>% filter(ID == "Orange 3"), linetype = "dotdash", size = 1) +
+  geom_point(data = . %>% filter(ID == "Orange 3"), shape = 13, color = "black", size = 3) +
+  # stat_summary(fun.data = n_fun, geom = "text", vjust = 5, show.legend = FALSE) +
+  scale_x_continuous(limits = c(-1, 91), breaks = c(10,30,50,70,90)) +
+  labs(x = "Intensity (dB)",
+       y = "Change in d' following HHL (+/- SE)",
+       color = "Go Frequency") +
+  facet_wrap(~ BG, scale = "fixed", nrow = 3, strip.position = "top") +
+  theme_classic() + 
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    panel.grid.major.x = element_line(colour = "grey80")
+    # panel.grid.minor.x = element_line(colour = "grey80"))
+  )
