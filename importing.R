@@ -1,8 +1,3 @@
-
-# Clear workspace ---------------------------------------------------------
-  rm(list = ls())
-
-
 # Xlsx multisheet import --------------------------------------------------
 # Read All Excel Sheets
 # Modified from https://stackoverflow.com/questions/12945687/read-all-worksheets-in-an-excel-workbook-into-an-r-list-with-data-frames

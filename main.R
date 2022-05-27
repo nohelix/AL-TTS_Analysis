@@ -22,6 +22,10 @@ library(ggplot2); library(forcats);
 # Exporting data
 library(writexl);
 
+
+# Clear workspace ---------------------------------------------------------
+rm(list = ls())
+
 # Global Variables --------------------------------------------------------
 
 # The folder where the 'summary' worksheet Noise_TTS_Gp1_Green-Orange.xlsx is:
@@ -41,7 +45,7 @@ setwd(MainFolder)
 
 
 # Clean Environment & Import Data -----------------------------------------
-source("importing.R")
+source("C:/Users/Noelle/Documents/GitHub/AL-TTS_Analysis/importing.R")
 
 
 # Dataset Picker ----------------------------------------------------------
