@@ -18,10 +18,10 @@ library(writexl)
 # Phase Day numbers -------------------------------------------------------
 
 TTS_Data %>%
-  # filter(Condition %in% c("Baseline", "Post HHL")) %>%
-  filter(Condition  == "Post HHL") %>%
+  # filter(Condition %in% c("Baseline", "Post HHL", "Post 2nd Exposure")) %>%
+  filter(Condition  == "Post 2nd Exposure") %>%
   # filter(!(ID %in% HL_not_done)) %>%
-  filter(ID == "Green 1") %>%
+  filter(ID == "Green 5") %>%
   group_by(ID, Condition, Duration, Frequency, Intensity, BG_Type, BG_Intensity) %>%
   summarise(Days = n(), Trials = sum(Trials, na.rm = TRUE)) %>%
   arrange(Days)
