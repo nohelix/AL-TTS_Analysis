@@ -20,7 +20,7 @@ library(writexl)
 TTS_Data %>%
   # filter(Condition %in% c("Baseline", "Post HHL")) %>%
   filter(Condition  == "Post HHL") %>%
-  filter(!(ID %in% HL_not_done)) %>%
+  # filter(!(ID %in% HL_not_done)) %>%
   filter(ID == "Green 1") %>%
   group_by(ID, Condition, Duration, Frequency, Intensity, BG_Type, BG_Intensity) %>%
   summarise(Days = n(), Trials = sum(Trials, na.rm = TRUE)) %>%
