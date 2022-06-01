@@ -45,9 +45,15 @@ setwd(MainFolder)
 
 
 # Clean Environment & Import Data -----------------------------------------
+# errors, post ABRs and 'maintenance' days are automatically removed
 source("~/GitHub/AL-TTS_Analysis/importing.R")
 
 
 # Dataset Picker ----------------------------------------------------------
-# TODO: this.
+# Options: Data_all, Data_no1st, Data_trimmedBlocks
+# Data_all is every valid trial
+# Data_no1st has only the 1st full block removed to account for warm up
+# Data_trimmedBlocks also removes days that don't meet the minimum (5 blocks) &
+#       blocks exceeding the max of the worst rat. This accounts for exhaustion.
 
+Analysis_data = Data_all
