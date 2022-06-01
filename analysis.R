@@ -84,7 +84,7 @@ dprime_calc <- function(df) {
 
 
 TH_data <-
-  Data %>%
+  Analysis_data %>%
   group_by(ID, Sex, Condition, Stim, BG_Type, BG_Intensity, `Dur (ms)`, Type, `Freq (kHz)`, `Inten (dB)`, Response) %>% #View
   summarise(count = n()) %>%
   spread(Response, count) %>% #View
@@ -431,7 +431,7 @@ TH_filter <- function(df) {
 }
 
 Data_over_TH <-
-  Data %>%
+  Analysis_data
   ungroup() %>%
   # select(-data_trimmed, -Blocks_trimmed) %>%
   # filter(ID == "Green 1") %>%
@@ -693,7 +693,7 @@ lm_p <- function(df) {
   return(result)
 }
 
-# Data %>%
+# Analysis_data
 #   ungroup() %>%
 #   unnest(data) %>%
 #   # filter(ID == "Green 1") %>% #print
@@ -725,7 +725,7 @@ lm_p <- function(df) {
 #
 # # Overall Model
 # model_data <-
-#   Data %>%
+#   Analysis_data
 #   ungroup() %>%
 #   unnest(data) %>%
 #   # filter(ID == "Green 1") %>%
