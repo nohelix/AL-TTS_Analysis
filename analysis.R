@@ -57,8 +57,8 @@ dprime_table <- function(df) {
   CRnum = (if (check == 1) filter(df, Type == 0) %>% .$C.R. %>% as.numeric() else check) #%>% print
   FAnum = (if (check == 1) filter(df, Type == 0) %>% .$F.A. %>% as.numeric() else check) #%>% print
   new_df = df %>% filter(Type == 1) %>% rename(CR = C.R., FA = F.A.) %>%
-    mutate(CR = if (is.na(CR)) CRnum,
-           FA = if (is.na(FA)) FAnum,
+    mutate(CR = ifelse(is.na(CR), CRnum, CR),
+           FA = ifelse(is.na(FA), FAnum, CR),
            Hit = as.numeric(Hit),
            Miss = as.numeric(Miss)) %>% replace(is.na(.), 0) #%>% print
   return(new_df)
