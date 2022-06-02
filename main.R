@@ -56,4 +56,5 @@ setwd(MainFolder)
 # Data_trimmedBlocks also removes days that don't meet the minimum (5 blocks) &
 #       blocks exceeding the max of the worst rat. This accounts for exhaustion.
 
-Analysis_data = Data_all
+Analysis_data = Data_all %>%
+  filter(!(ID %in% HL_not_done))
