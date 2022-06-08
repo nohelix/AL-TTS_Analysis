@@ -114,7 +114,7 @@ TH_cutoff <- 1.5
   ) %>%
   spread(Type, TH)
 
-li# Average Thresholds
+# Average Thresholds
 Avg_TH_Condition <-
   TH %>%
   filter(Condition %in% c("Baseline", "Post HHL")) %>%
