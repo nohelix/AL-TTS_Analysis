@@ -97,24 +97,24 @@ TH_data <-
 TH_cutoff <- 1.5
 
 
-TH <-
+# TH <-
   TH_data %>%
-  # filter(ID == "Green 1") %>%
-  # filter(Stim == "tone") %>%
-  # filter(Type == "32kHz") %>%
+  filter(ID == "Green 5") %>%
+  filter(Stim == "tone") %>%
+  filter(Type == "32kHz") %>%
   select(ID:`Dur (ms)`, dprime, dB, Type) %>% #print
   mutate(Type = fct_relevel(Type, levels = c("BBN", "4kHz", "8kHz", "16kHz", "32kHz")),
          score = abs(dprime - TH_cutoff)) %>% #print
   filter(score < 1) %>%
   group_by(ID, Sex, Condition, BG_Type, BG_Intensity, `Dur (ms)`, Type) %>%
   do(
-    filter(., rank(.$score) == 1 | rank(.$score) == 2) %>% #print)
-      summarize(TH = weighted.mean(.$dB, (1 - .$score))) %>% #print
-      round(., digits = 0)
+    drda(dprime ~ dB, data = .) %>%
+    # invest(mod, y0 = 1.5, interval = "Wald") %>% print(.))
+    plot(.) %>% print(.)
   ) %>%
   spread(Type, TH)
 
-# Average Thresholds
+li# Average Thresholds
 Avg_TH_Condition <-
   TH %>%
   filter(Condition %in% c("Baseline", "Post HHL")) %>%
