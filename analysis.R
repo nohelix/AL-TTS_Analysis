@@ -100,7 +100,7 @@ TH_cutoff <- 1.5
 # TH <-
   TH_data %>%
   filter(ID == "Green 1") %>%
-  filter(Stim == "BBN") %>%
+  filter(Stim == "tone") %>%
   filter(`Dur (ms)` == 50) %>%
   filter(Condition != "Recovery") %>%
   # filter(Type == "32kHz") %>%
@@ -108,13 +108,12 @@ TH_cutoff <- 1.5
   # mutate(Type = fct_relevel(Type, levels = c("BBN", "4kHz", "8kHz", "16kHz", "32kHz"))) %>% #print
   group_by(ID, Sex, Condition, BG_Type, BG_Intensity, `Dur (ms)`, Type) %>%
   do(
-    # drm(dprime ~ dB, data = ., fct = LL.4()) %>%
-    drda(dprime ~ dB, data = .) %>%
-    # invest(., y0 = c(1.3, 1.5, 1.7), interval = "inversion") %>%
-    plot(.) %>%
+    loess(dprime ~ dB, data = .) %$%
+    approx(x = .$fitted, y = .$x, xout = 1.5)$y %>%
+    # plot(.) %>%
     print(.)
-  )
-  # spread(Type, TH)
+  ) %>%
+  spread(Type, TH)
 
 # Average Thresholds
 Avg_TH_Condition <-
