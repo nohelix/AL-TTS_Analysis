@@ -14,7 +14,7 @@
 library(readxl); library(tidyverse); library(magrittr); library(dplyr); library(tidyr);
 
 # Analysis
-library(psych); library(psycho); library(drda); library(lme4); library(lmerTest);
+library(psych); library(psycho); library(drc); library(lme4); library(lmerTest);
 
 # Data visualization
 library(ggplot2); library(forcats);

@@ -99,18 +99,19 @@ TH_cutoff <- 1.5
 
 # TH <-
   TH_data %>%
-  filter(ID == "Green 5") %>%
+  filter(ID == "Green 1") %>%
   filter(Stim == "tone") %>%
   filter(Type == "32kHz") %>%
-  select(ID:`Dur (ms)`, dprime, dB, Type) %>% #print
+  dplyr::select(ID:`Dur (ms)`, dprime, dB, Type) %>% #print
   mutate(Type = fct_relevel(Type, levels = c("BBN", "4kHz", "8kHz", "16kHz", "32kHz")),
          score = abs(dprime - TH_cutoff)) %>% #print
   filter(score < 1) %>%
   group_by(ID, Sex, Condition, BG_Type, BG_Intensity, `Dur (ms)`, Type) %>%
   do(
-    drda(dprime ~ dB, data = .) %>%
+    drm(dprime ~ dB, data = ., fct = LL.4()) %>%
     # invest(mod, y0 = 1.5, interval = "Wald") %>% print(.))
-    plot(.) %>% print(.)
+    plot(.) %>%
+    print(.)
   ) %>%
   spread(Type, TH)
 
