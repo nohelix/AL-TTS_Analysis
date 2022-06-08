@@ -74,6 +74,16 @@ dprime_calc <- function(df) {
     ) #%>% print
 }
 
+# Threshold calculation calculation
+TH_calc <- function(df) {
+  # library(drda)
+  # drda(dprime ~ dB, data = df) %>% plot
+  fit = loess(dprime ~ dB, data = df)
+  # plot(fit)
+  TH = approx(x = fit$fitted, y = fit$x, xout = TH_cutoff)$y #%>% print
+  return(TH)
+}
+
 # TODO: Do a polynomial line fitting of d' and then find the intercept at the TH cutoff.
 # Issue no guarentee of bracketing and indeed failure for Green 1 @ 32kHz
 # Pulling the wrong line
@@ -96,23 +106,19 @@ TH_data <-
 
 TH_cutoff <- 1.5
 
-
-# TH <-
+TH <-
   TH_data %>%
-  filter(ID == "Green 1") %>%
-  filter(Stim == "tone") %>%
-  filter(`Dur (ms)` == 50) %>%
-  filter(Condition != "Recovery") %>%
-  # filter(Type == "32kHz") %>%
+  # filter(ID == "Green 1") %>%
+  # filter(Stim == "tone") %>%
+  # filter(`Dur (ms)` == 50) %>%
+  # filter(Condition == "Post HHL") %>%
+  # filter(Type == "16kHz") %>%
   select(ID:`Dur (ms)`, dprime, dB, Type) %>% #print
-  # mutate(Type = fct_relevel(Type, levels = c("BBN", "4kHz", "8kHz", "16kHz", "32kHz"))) %>% #print
+  mutate(Type = fct_relevel(Type, levels = c("BBN", "4kHz", "8kHz", "16kHz", "32kHz"))) %>% #print
   group_by(ID, Sex, Condition, BG_Type, BG_Intensity, `Dur (ms)`, Type) %>%
-  do(
-    loess(dprime ~ dB, data = .) %$%
-    approx(x = .$fitted, y = .$x, xout = 1.5)$y %>%
-    # plot(.) %>%
-    print(.)
-  ) %>%
+  nest() %>%
+  mutate(TH = map_dbl(data, TH_calc)) %>%
+  select(-data) %>%
   spread(Type, TH)
 
 # Average Thresholds
