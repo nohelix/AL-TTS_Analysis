@@ -100,20 +100,21 @@ TH_cutoff <- 1.5
 # TH <-
   TH_data %>%
   filter(ID == "Green 1") %>%
-  filter(Stim == "tone") %>%
-  filter(Type == "32kHz") %>%
-  dplyr::select(ID:`Dur (ms)`, dprime, dB, Type) %>% #print
-  mutate(Type = fct_relevel(Type, levels = c("BBN", "4kHz", "8kHz", "16kHz", "32kHz")),
-         score = abs(dprime - TH_cutoff)) %>% #print
-  filter(score < 1) %>%
+  filter(Stim == "BBN") %>%
+  filter(`Dur (ms)` == 50) %>%
+  filter(Condition != "Recovery") %>%
+  # filter(Type == "32kHz") %>%
+  select(ID:`Dur (ms)`, dprime, dB, Type) %>% #print
+  # mutate(Type = fct_relevel(Type, levels = c("BBN", "4kHz", "8kHz", "16kHz", "32kHz"))) %>% #print
   group_by(ID, Sex, Condition, BG_Type, BG_Intensity, `Dur (ms)`, Type) %>%
   do(
-    drm(dprime ~ dB, data = ., fct = LL.4()) %>%
-    # invest(mod, y0 = 1.5, interval = "Wald") %>% print(.))
+    # drm(dprime ~ dB, data = ., fct = LL.4()) %>%
+    drda(dprime ~ dB, data = .) %>%
+    # invest(., y0 = c(1.3, 1.5, 1.7), interval = "inversion") %>%
     plot(.) %>%
     print(.)
-  ) %>%
-  spread(Type, TH)
+  )
+  # spread(Type, TH)
 
 # Average Thresholds
 Avg_TH_Condition <-
