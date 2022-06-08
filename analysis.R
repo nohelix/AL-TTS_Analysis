@@ -1,8 +1,10 @@
 
-# Hit/FA Rate -------------------------------------------------------------
+# Hit/FA Graph -------------------------------------------------------------
 # creates, displays, and saves a graph of hit rate, false alarm rate, and trial count across conditions
 # Currently done off the Summary spreadsheet and NOT calculated from the actual data.
 # Only trial count is sanity checked against the real data.
+
+# TODO: Recalc out of raw data
 
 TTS_Data %>%
   filter(!(ID %in% HL_not_done)) %>%
@@ -84,15 +86,6 @@ TH_calc <- function(df) {
   return(TH)
 }
 
-# TODO: Do a polynomial line fitting of d' and then find the intercept at the TH cutoff.
-# Issue no guarentee of bracketing and indeed failure for Green 1 @ 32kHz
-# Pulling the wrong line
-# ID      Sex   Condition Stim  BG_Type BG_Intensity `Dur (ms)` dprime    dB Type  score
-# <chr>   <chr> <fct>     <chr> <chr>   <chr>             <dbl>  <dbl> <dbl> <fct> <dbl>
-# 2 Green 1 Male  Baseline  tone  NA      NA                   50  1.28      0 32kHz 0.219
-# 3 Green 1 Male  Baseline  tone  NA      NA                   50  1.17      5 32kHz 0.327
-# 4 Green 1 Male  Baseline  tone  NA      NA                   50  1.91     10 32kHz 0.406
-
 TH_data <-
   Analysis_data %>%
   group_by(ID, Sex, Condition, Stim, BG_Type, BG_Intensity, `Dur (ms)`, Type, `Freq (kHz)`, `Inten (dB)`, Response) %>% #View
@@ -103,8 +96,6 @@ TH_data <-
   mutate(dprime_data = map(data, dprime_table),
          dprime = map(dprime_data, dprime_calc)) %>% #print
   unnest(dprime) #%>% print
-
-TH_cutoff <- 1.5
 
 TH <-
   TH_data %>%
@@ -127,22 +118,22 @@ Avg_TH_Condition <-
   filter(Condition %in% c("Baseline", "Post HHL")) %>%
   filter(!(ID %in% HL_not_done)) %>%
   group_by(Condition, BG_Type, BG_Intensity) %>%
-  summarise("BBN_avg" = mean(BBN, na.rm = TRUE),
-            "4kHz_avg" = mean(`4kHz`, na.rm = TRUE),
-            "8kHz_avg" = mean(`8kHz`, na.rm = TRUE),
-            "16kHz_avg" = mean(`16kHz`, na.rm = TRUE),
-            "32kHz_avg" = mean(`32kHz`, na.rm = TRUE))
+  summarise("BBN_avg" = mean(BBN, na.rm = TRUE) %>% round(digits = 0),
+            "4kHz_avg" = mean(`4kHz`, na.rm = TRUE) %>% round(digits = 0),
+            "8kHz_avg" = mean(`8kHz`, na.rm = TRUE) %>% round(digits = 0),
+            "16kHz_avg" = mean(`16kHz`, na.rm = TRUE) %>% round(digits = 0),
+            "32kHz_avg" = mean(`32kHz`, na.rm = TRUE) %>% round(digits = 0))
 
 Avg_TH <-
   TH %>%
   filter(Condition %in% c("Baseline", "Post HHL")) %>%
   filter(!(ID %in% HL_not_done)) %>%
   group_by(BG_Type, BG_Intensity) %>%
-  summarise("BBN" = mean(BBN, na.rm = TRUE),
-            "4kHz" = mean(`4kHz`, na.rm = TRUE),
-            "8kHz" = mean(`8kHz`, na.rm = TRUE),
-            "16kHz" = mean(`16kHz`, na.rm = TRUE),
-            "32kHz" = mean(`32kHz`, na.rm = TRUE)) %>%
+  summarise("BBN" = mean(BBN, na.rm = TRUE) %>% round(digits = 0),
+            "4kHz" = mean(`4kHz`, na.rm = TRUE) %>% round(digits = 0),
+            "8kHz" = mean(`8kHz`, na.rm = TRUE) %>% round(digits = 0),
+            "16kHz" = mean(`16kHz`, na.rm = TRUE) %>% round(digits = 0),
+            "32kHz" = mean(`32kHz`, na.rm = TRUE) %>% round(digits = 0)) %>%
   gather(Type, TH, "BBN", "4kHz", "8kHz", "16kHz", "32kHz") %>%
   mutate(Type = fct_relevel(Type, "BBN", "4kHz", "8kHz", "16kHz", "32kHz"))
 
@@ -411,7 +402,7 @@ TH_filter <- function(df) {
 }
 
 Data_over_TH <-
-  Analysis_data
+  Analysis_data %>%
   ungroup() %>%
   # select(-data_trimmed, -Blocks_trimmed) %>%
   # filter(ID == "Green 1") %>%

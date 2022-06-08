@@ -40,6 +40,8 @@ HL_not_done = c("Orange 4", "Orange 5", "Green 2", "Green 3")
 
 min_blocks = 5
 
+TH_cutoff = 1.5
+
 # Working directory -------------------------------------------------------
 setwd(MainFolder)
 
@@ -56,8 +58,11 @@ setwd(MainFolder)
 # Data_trimmedBlocks also removes days that don't meet the minimum (5 blocks) &
 #       blocks exceeding the max of the worst rat. This accounts for exhaustion.
 
-Analysis_data = Data_all %>%
+Analysis_data = Data_no1st %>%
   filter(!(ID %in% HL_not_done))
+
+# TODO: add ability to filter based on dB range
+
 
 
 # Analysis ----------------------------------------------------------------
