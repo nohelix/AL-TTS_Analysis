@@ -1,53 +1,8 @@
-
-# Hit/FA Graph -------------------------------------------------------------
-# creates, displays, and saves a graph of hit rate, false alarm rate, and trial count across conditions
-# Currently done off the Summary spreadsheet and NOT calculated from the actual data.
-# Only trial count is sanity checked against the real data.
-
-# TODO: Recalc out of raw data
-
-TTS_Data %>%
-  filter(!(ID %in% HL_not_done)) %>%
-  # Group by ID, experiment type, etc
-  group_by(ID, Sex, Condition, Frequency, BG_Type, BG_Intensity) %>%
-  # Summarize for each individual
-  summarise(count = n_distinct(Date),
-            Trials = mean(Trials, na.rm = T),
-            Hit = mean(Hit, na.rm = T),
-            FA = mean(FA, na.rm = T)) %>%
-  ungroup() %>%
-  # filter(Condition != "Recovery") %>%
-  filter(Condition != "Recovery 2") %>%
-  filter(Condition != "Post 2nd Exposure") %>% #View
-  # filter(Frequency == "BBN") %>%
-  # filter(Frequency == "4-32kHz") %>%
-  gather(variable, value, Trials, Hit, FA) %>% #print
-  ggplot(aes(x = fct_relevel(BG_Intensity, "NA","30","50"), y = value)) +
-  geom_boxplot(aes(fill = Condition)) +
-  labs(title = "BBN & 4-32kHz",
-       x = "Background Intensity (dB)") +
-  facet_wrap(.~ fct_relevel(variable, "Trials", "Hit", "FA"), scales = "free_y") +
-  theme_classic() +
-  theme(
-    axis.title.x = element_text(size = 14, color = "black"),   # size of x-axis title
-    axis.title.y = element_text(size = 14, color = "black"),   # size of y-axis title
-    axis.text.x = element_text(size = 12, color = "black"),    # size of x-axis text
-    axis.text.y = element_text(size = 12, color = "black"),    # size of y-axis text
-    strip.text.x = element_text(size = 14, color = "black"), # size of facet titles
-    legend.position = "right"                                 # hide legend
-  )
-
-
-ggsave("Descriptive_trials_FA_hit.jpg",
-       plot = last_plot(), # or an explicit ggplot object name
-       path = ProjectFolder,
-       width = 1200, height = 600, units = "px", dpi = 100)
-
 # Threshold Calculation ---------------------------------------------------
 # Signal detection index calculation by the psycho package. We use d' a sensitivity measure.
 # https://neuropsychology.github.io/psycho.R/2018/03/29/SDT.html
 
-# Creates a properly formated table for psycho by adding the overall CR/FA to each row
+# Creates a properly formatted table for psycho by adding the overall CR/FA to each row
 dprime_table <- function(df) {
   # print(df)
   check = df %>% filter(Type == 0) %>% count() %>% as.numeric() #%>% print
@@ -76,16 +31,7 @@ dprime_calc <- function(df) {
     ) #%>% print
 }
 
-# Threshold calculation calculation
-TH_calc <- function(df) {
-  # library(drda)
-  # drda(dprime ~ dB, data = df) %>% plot
-  fit = loess(dprime ~ dB, data = df)
-  # plot(fit)
-  TH = approx(x = fit$fitted, y = fit$x, xout = TH_cutoff)$y #%>% print
-  return(TH)
-}
-
+# Calculate d' and save (along with hit/miss/CR/FA table)
 TH_data <-
   Analysis_data %>%
   group_by(ID, Sex, Condition, Stim, BG_Type, BG_Intensity, `Dur (ms)`, Type, `Freq (kHz)`, `Inten (dB)`, Response) %>% #View
@@ -97,13 +43,24 @@ TH_data <-
          dprime = map(dprime_data, dprime_calc)) %>% #print
   unnest(dprime) #%>% print
 
+
+
+# Threshold calculation calculation based on TH_cutoff intercept of fit curve
+# LOESS: Local Regression is a non-parametric approach that fits multiple regressions
+# see http://r-statistics.co/Loess-Regression-With-R.html
+TH_calc <- function(df) {
+  # Uncomment to see line fitting by a package which shows line
+  # library(drda)
+  # drda(dprime ~ dB, data = df) %>% plot
+  fit = loess(dprime ~ dB, data = df)
+  # plot(fit)
+  TH = approx(x = fit$fitted, y = fit$x, xout = TH_cutoff)$y #%>% print
+  return(TH)
+}
+
+
 TH <-
   TH_data %>%
-  # filter(ID == "Green 1") %>%
-  # filter(Stim == "tone") %>%
-  # filter(`Dur (ms)` == 50) %>%
-  # filter(Condition == "Post HHL") %>%
-  # filter(Type == "16kHz") %>%
   select(ID:`Dur (ms)`, dprime, dB, Type) %>% #print
   mutate(Type = fct_relevel(Type, levels = c("BBN", "4kHz", "8kHz", "16kHz", "32kHz"))) %>% #print
   group_by(ID, Sex, Condition, BG_Type, BG_Intensity, `Dur (ms)`, Type) %>%
@@ -111,6 +68,9 @@ TH <-
   mutate(TH = map_dbl(data, TH_calc)) %>%
   select(-data) %>%
   spread(Type, TH)
+
+
+# Threshold Tables for Viewing --------------------------------------------
 
 # Average Thresholds
 Avg_TH_Condition <-
