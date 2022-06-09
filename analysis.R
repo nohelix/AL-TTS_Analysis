@@ -1,3 +1,122 @@
+
+# Daily summary from raw data -------------------------------------------------------------
+# Calculates hit rate, false alarm rate, and trial count from data across conditions
+# Summarized by day and individual
+
+# Summarize Hits, misses, FAs, & CRs for each individual by day
+Hit_summary_by_day <-
+  Analysis_data %>%
+  filter(!(ID %in% HL_not_done)) %>%
+  filter(Condition != "Recovery" & Condition != "Recovery") %>%
+  group_by(ID, Date, Sex, Condition, Stim, BG_Type, BG_Intensity, Response) %>%
+  summarise(count = n()) %>%
+  spread(Response, count, fill = 0) %>%
+  mutate(Trials = `C.R.` + `F.A.` + Hit + Miss,
+         `Hit%` = Hit / (Hit + Miss),
+         `FA%` = `F.A.` / (`C.R.` + `F.A.`)) %>%
+  # Sanity checking count
+  # left_join(., Analysis_data %>%
+  #           group_by(ID, Date) %>%
+  #           count(), by = c("Date", "ID")) %>%
+  # filter(Trials != n)
+  # Summarize for each individual by day
+  group_by(ID, Sex, Condition, Stim, BG_Type, BG_Intensity) %>%
+  summarise(count = n_distinct(Date),
+            Trials = mean(Trials, na.rm = T),
+            Hit = mean(`Hit%`, na.rm = T),
+            FA = mean(`FA%`, na.rm = T)) %>%
+  ungroup() %>%
+  mutate(BG_Intensity = factor(BG_Intensity, levels = c("NA", "30", "50")),
+         Stim = factor(Stim, levels = c("BBN", "tone")))
+
+Hit_summary_by_day_BBN <-
+  Hit_summary_by_day %>%
+  filter(Stim == "BBN")
+
+Hit_summary_by_day_tone <-
+  Hit_summary_by_day %>%
+  filter(Stim == "tone")
+
+# Trial Count Analysis ----------------------------------------------------
+
+# ANOVA
+Trials.aov = aov(Trials ~ Condition * BG_Intensity * Stim, data = Hit_summary_by_day_tone)
+
+# Parametric check
+Trials.aov$residuals %>%
+  shapiro.test()
+
+# Summary
+summary(Trials.aov)
+
+TukeyHSD(Trials.aov)$`Stim` %>%
+  as_tibble(.name_repair = "unique", rownames = "Comparison")
+
+TukeyHSD(Trials.aov)$`Condition` %>%
+  as_tibble(.name_repair = "unique", rownames = "Comparison") %>%
+  filter(`p adj` <= 0.05)
+
+# Hit Rate Analysis ----------------------------------------------------
+
+# ANOVA
+Hit.aov = aov(Hit ~ Condition * BG_Intensity * Stim, data = Hit_summary_by_day_tone)
+
+# Parametric check
+Hit.aov$residuals %>%
+  shapiro.test()
+
+# Non-Parametric ANOVA
+kruskal.test(Hit ~ BG_Intensity, data = Hit_summary_by_day_tone)
+kruskal.test(Hit ~ Stim, data = Hit_summary_by_day_tone)
+kruskal.test(Hit ~ Condition, data = Hit_summary_by_day_tone)
+
+kruskal.test(Hit ~ Condition,
+             data = Hit_summary_by_day_tone %>%
+                    filter(Stim == "BBN"))
+
+kruskal.test(Hit ~ Condition,
+             data = Hit_summary_by_day_tone %>%
+                    filter(Stim == "tone" & BG_Intensity == "NA"))
+
+kruskal.test(Hit ~ Condition,
+             data = Hit_summary_by_day_tone %>%
+               filter(Stim == "tone" & BG_Intensity == "50"))
+#
+#
+#
+# # Summary
+# summary(Hit.aov)
+#
+# TukeyHSD(Hit.aov)$`Stim` %>%
+#   as_tibble(.name_repair = "unique", rownames = "Comparison")
+#
+# TukeyHSD(Hit.aov)$`BG_Intensity` %>%
+#   as_tibble(.name_repair = "unique", rownames = "Comparison")
+#
+# TukeyHSD(Hit.aov)$`Condition` %>%
+#   as_tibble(.name_repair = "unique", rownames = "Comparison") %>%
+#   filter(grepl("Baseline", Comparison))
+#
+# TukeyHSD(Hit.aov)$`Condition:Stim` %>%
+#   as_tibble(.name_repair = "unique", rownames = "Comparison") %>%
+#   filter(grepl(".*?:BBN-.*?:BBN|.*?:tone-.*?:tone", Comparison)) %>%
+#   filter(`p adj` <= 0.05)
+
+# False Alarm Rate Analysis ----------------------------------------------------
+
+# ANOVA
+FA.aov = aov(FA ~ Condition * BG_Intensity * Stim, data = Hit_summary_by_day_tone)
+
+# Parametric check
+FA.aov$residuals %>%
+  shapiro.test()
+
+# Summary
+summary(FA.aov)
+
+TukeyHSD(FA.aov)$`BG_Intensity` %>%
+  as_tibble(.name_repair = "unique", rownames = "Comparison")
+
 # Threshold Calculation ---------------------------------------------------
 # Signal detection index calculation by the psycho package. We use d' a sensitivity measure.
 # https://neuropsychology.github.io/psycho.R/2018/03/29/SDT.html
