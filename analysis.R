@@ -40,7 +40,7 @@ Hit_summary_by_day_tone <-
 # Trial Count Analysis ----------------------------------------------------
 
 # ANOVA
-Trials.aov = aov(Trials ~ Condition * BG_Intensity * Stim, data = Hit_summary_by_day_tone)
+Trials.aov = aov(Trials ~ Condition * BG_Intensity, data = Hit_summary_by_day_tone)
 
 # Parametric check
 Trials.aov$residuals %>%
@@ -49,30 +49,21 @@ Trials.aov$residuals %>%
 # Summary
 summary(Trials.aov)
 
-TukeyHSD(Trials.aov)$`Stim` %>%
-  as_tibble(.name_repair = "unique", rownames = "Comparison")
-
-TukeyHSD(Trials.aov)$`Condition` %>%
-  as_tibble(.name_repair = "unique", rownames = "Comparison") %>%
-  filter(`p adj` <= 0.05)
-
 # Hit Rate Analysis ----------------------------------------------------
 
 # ANOVA
-Hit.aov = aov(Hit ~ Condition * BG_Intensity * Stim, data = Hit_summary_by_day_tone)
+Hit.aov = aov(Hit ~ Condition * BG_Intensity, data = Hit_summary_by_day_tone)
 
 # Parametric check
 Hit.aov$residuals %>%
   shapiro.test()
 
+# Summary
+summary(Hit.aov)
+
 # Non-Parametric ANOVA
 kruskal.test(Hit ~ BG_Intensity, data = Hit_summary_by_day_tone)
-kruskal.test(Hit ~ Stim, data = Hit_summary_by_day_tone)
 kruskal.test(Hit ~ Condition, data = Hit_summary_by_day_tone)
-
-kruskal.test(Hit ~ Condition,
-             data = Hit_summary_by_day_tone %>%
-                    filter(Stim == "BBN"))
 
 kruskal.test(Hit ~ Condition,
              data = Hit_summary_by_day_tone %>%
@@ -81,31 +72,11 @@ kruskal.test(Hit ~ Condition,
 kruskal.test(Hit ~ Condition,
              data = Hit_summary_by_day_tone %>%
                filter(Stim == "tone" & BG_Intensity == "50"))
-#
-#
-#
-# # Summary
-# summary(Hit.aov)
-#
-# TukeyHSD(Hit.aov)$`Stim` %>%
-#   as_tibble(.name_repair = "unique", rownames = "Comparison")
-#
-# TukeyHSD(Hit.aov)$`BG_Intensity` %>%
-#   as_tibble(.name_repair = "unique", rownames = "Comparison")
-#
-# TukeyHSD(Hit.aov)$`Condition` %>%
-#   as_tibble(.name_repair = "unique", rownames = "Comparison") %>%
-#   filter(grepl("Baseline", Comparison))
-#
-# TukeyHSD(Hit.aov)$`Condition:Stim` %>%
-#   as_tibble(.name_repair = "unique", rownames = "Comparison") %>%
-#   filter(grepl(".*?:BBN-.*?:BBN|.*?:tone-.*?:tone", Comparison)) %>%
-#   filter(`p adj` <= 0.05)
 
 # False Alarm Rate Analysis ----------------------------------------------------
 
 # ANOVA
-FA.aov = aov(FA ~ Condition * BG_Intensity * Stim, data = Hit_summary_by_day_tone)
+FA.aov = aov(FA ~ Condition * BG_Intensity, data = Hit_summary_by_day_tone)
 
 # Parametric check
 FA.aov$residuals %>%
@@ -115,6 +86,9 @@ FA.aov$residuals %>%
 summary(FA.aov)
 
 TukeyHSD(FA.aov)$`BG_Intensity` %>%
+  as_tibble(.name_repair = "unique", rownames = "Comparison")
+
+TukeyHSD(FA.aov)$`Condition` %>%
   as_tibble(.name_repair = "unique", rownames = "Comparison")
 
 # Threshold Calculation ---------------------------------------------------
@@ -513,298 +487,41 @@ Rxn_change <-
   filter(!(ID %in% HL_not_done)) %>%
   select(ID, Sex, Condition, BG_Type, BG_Intensity, Stim, `Dur (ms)`, `Freq (kHz)`, `Inten (dB)`, mean) %>%
   spread(Condition, mean) %>%
-  mutate(Rxn_change = `Post HHL`- Baseline) %>%
+  mutate(Rxn_change = `Post HHL` - Baseline) %>%
   gather(Condition, mean, "Rxn_change")
 
 
 # React time comparison between overall and daily averaging was basically identical, so daily dropped
 
-# Rxn_daily <-
-#   Data_over_TH %>%
-#     ungroup() %>%
-#     unnest(data) %>%
-#     # filter(Date > "2022-2-25" & Date < "2022-2-26") %>%
-#     # filter(ID == "Green 1") %>%
-#     group_by(ID, Date, Condition, BG_Type, BG_Intensity, Stim, `Dur (ms)`, `Freq (kHz)`, `Inten (dB)`) %>%
-#     do(describe(.$`R Time (ms)`)) %>%
-#     as_tibble() %>%
-#     left_join(.,
-#               Data_over_TH %>%
-#                 ungroup() %>%
-#                 unnest(data_trimmed) %>%
-#                 # filter(Date > "2022-2-25" & Date < "2022-2-26") %>%
-#                 # filter(ID == "Green 1") %>%
-#                 group_by(ID, Date, Condition, BG_Type, BG_Intensity, Stim, `Dur (ms)`, `Freq (kHz)`, `Inten (dB)`) %>%
-#                 do(describe(.$`R Time (ms)`)) %>%
-#                 as_tibble() %>%
-#                 rename_with( ~ paste0(., "_trimmed"), n:se)
-#     ) %>%
-#     select(-vars) %>%
-#     select(ID:`Inten (dB)`, mean, mean_trimmed) %>%
-#     group_by(ID, Condition, BG_Type, BG_Intensity, `Dur (ms)`, `Freq (kHz)`, `Inten (dB)`) %>%
-#     summarise(mean = mean(mean), mean_trimmed = mean(mean_trimmed))
-#
-# # React time comparison between averaging methods - basically identical
-# Rxn_overall %>%
-#   select(ID:mean, mean_trimmed) %>%
-#   # rename(mean_all = mean,
-#   #        mean_trimmed_all = mean_trimmed) %>%
-#   left_join(., Rxn_daily,
-#             by = c("ID", "Condition", "Dur (ms)", "Freq (kHz)", "Inten (dB)"),
-#             suffix = c("", "_daily")) %>% View
+Rxn_daily <-
+  Data_over_TH %>%
+    ungroup() %>%
+    unnest(data) %>%
+    # filter(Date > "2022-2-25" & Date < "2022-2-26") %>%
+    # filter(ID == "Green 1") %>%
+    group_by(ID, Date, Condition, BG_Type, BG_Intensity, Stim, `Dur (ms)`, `Freq (kHz)`, `Inten (dB)`) %>%
+    do(describe(.$`R Time (ms)`)) %>%
+    group_by(ID, Condition, BG_Type, BG_Intensity, `Dur (ms)`, `Freq (kHz)`, `Inten (dB)`) %>%
+    summarise(mean = mean(mean))
 
-
-
-
-# Plotting vars -----------------------------------------------------------
-
-Noise = "NA" #("NA", "PNK", "WN")
-BG_dB = "NA"  #("NA", "30", "50)
-
-BG = case_when(Noise == "PNK" ~ "Pink Background Noise",
-               Noise == "WN" ~ "White Background Noise",
-               Noise == "NA" ~ "No Background Noise")
-
-# Should potentially be updated to something like this
-# BG=case_when(BG_Type == "NA" & BG_Intensity == "NA" ~ "Quiet",
-#              BG_Type == "PNK" & BG_Intensity == "30" ~ "30dB Pink Noise Background",
-#              BG_Type == "PNK" & BG_Intensity == "50" ~ "50dB Pink Noise Background",
-#              BG_Type == "WN" & BG_Intensity == "50" ~ "50dB White Noise Background",
-#              TRUE ~ "ISSUE")
-
-# Rxn Plot ----------------------------------------------------------------
-# Plot by animal pre & post & group
-
+# React time comparison between averaging methods - basically identical
 Rxn_overall %>%
-  filter(`Inten (dB)` != -100) %>%
-  # filter(Condition != "Recovery") %>%
-  filter(Condition != "Recovery 2") %>%
-  filter(Condition != "Post 2nd Exposure") %>%
-  filter(!(ID %in% HL_not_done)) %>%
-  filter(`Freq (kHz)` != "0") %>%
-  filter(Noise == BG_Type & BG_Intensity == BG_dB) %>%
-  # filter(Sex == "Male") %>%
-  ggplot(aes(x = `Inten (dB)`, y = mean)) +
-  # geom_line(aes(color = Condition, linetype = ID))+
-  # geom_point(aes(color = Condition, fill = ID))+
-  # geom_point(aes(group = ID), color = "grey70")+
-  # geom_line(aes(group = ID, color = Condition))+
-  stat_summary(aes(color = Condition, group = Condition),
-               fun = mean,
-               fun.min = function(x) mean(x) - se(x),
-               fun.max = function(x) mean(x) + se(x),
-               geom = "errorbar", width = 1, position = position_dodge(1)) +
-  stat_summary(aes(color = Condition, group = Condition),
-               fun = mean,
-               geom = "point", position = position_dodge(1), size = 3) +
-  stat_summary(aes(color = Condition, group = Condition), fun = mean, geom = "line") +
-  labs(title = paste(BG, "at", BG_dB, "dB"),
-       x = "Intensity (dB)",
-       y = "Reaction time (ms, mean +/- SE)") +
-  facet_wrap(~ `Freq (kHz)`, scale = "free") +
-  theme_classic() +
-  theme(
-    plot.title = element_text(hjust = 0.5),
-    panel.grid.major.x = element_line(color = "grey80")
-    # panel.grid.minor.x = element_line(color = "grey80"))
-  )
+  select(ID:mean) %>%
+  left_join(., Rxn_daily,
+            by = c("ID", "Condition", "Dur (ms)", "Freq (kHz)", "Inten (dB)", "BG_Type", "BG_Intensity"),
+            suffix = c("", "_daily"))
 
-ggsave(paste0("Condition_", Noise, BG_dB, ".jpg"),
-       plot = last_plot(), # or an explicit ggplot object name
-       path = ProjectFolder,
-       width = 1200, height = 600, units = "px", dpi = 100)
-
-
-# lines = BG & facets = Condition
-Rxn_overall %>%
-  # group_by(ID) %>%
-  filter(`Inten (dB)` != -100) %>%
-  # filter(Condition != "Recovery") %>%
-  filter(Condition != "Recovery 2") %>%
-  filter(Condition != "Post 2nd Exposure") %>%
-  filter(!(ID %in% HL_not_done)) %>%
-  # filter(`Freq (kHz)` == "0") %>%
-  # filter(`Freq (kHz)` == "4") %>%
-  # filter(`Freq (kHz)` == "8") %>%
-  # filter(`Freq (kHz)` == "16") %>%
-  filter(`Freq (kHz)` == "32") %>%
-  ggplot(aes(x = `Inten (dB)`, y = mean)) +
-  # geom_line(aes(color = BG_Intensity, linetype = ID))+
-  # geom_point(aes(color = BG_Intensity, fill = ID))+
-  # geom_point(aes(group = ID), color = "grey70")+
-  # geom_line(aes(group = ID, color = BG_Intensity))+
-  stat_summary(aes(color = BG_Intensity, group = BG_Intensity),
-               fun = mean,
-               fun.min = function(x) mean(x) - se(x),
-               fun.max = function(x) mean(x) + se(x),
-               geom = "errorbar", width = 1, position = position_dodge(1)) +
-  stat_summary(aes(color = BG_Intensity, group = BG_Intensity),
-               fun = mean,
-               geom = "point", position = position_dodge(1), size = 3) +
-  stat_summary(aes(color = BG_Intensity, group = BG_Intensity), fun = mean, geom = "line", ) +
-  labs(title = "32kHz",
-       x = "Intensity (dB)",
-       y = "Reaction time (ms, mean +/- SE)") +
-  facet_wrap(~ `Condition`, scale = "free") +
-  theme_classic() +
-  theme(
-    plot.title = element_text(hjust = 0.5),
-    panel.grid.major.x = element_line(color = "grey80")
-    # panel.grid.minor.x = element_line(color = "grey80"))
-  )
-
-# Individuals
-Rxn_overall %>%
-  filter(`Inten (dB)` != -100) %>%
-  filter(Condition != "Recovery") %>%
-  filter(Condition != "Recovery 2") %>%
-  filter(Condition != "Post 2nd Exposure") %>%
-  filter(!(ID %in% HL_not_done)) %>%
-  filter(`Freq (kHz)` != "0") %>%
-  # filter(ID == "Green 1") %>%
-  filter(Noise == BG_Type & BG_Intensity == BG_dB) %>%
-  ggplot(aes(x = `Inten (dB)`, y = mean)) +
-  geom_line(aes(color = ID, linetype = Condition)) +
-  geom_point(aes(color = ID, shape = Condition)) +
-  labs(title = paste(BG, "at", BG_dB, "dB"),
-       x = "Intensity (dB)",
-       y = "Reaction time (ms)") +
-  facet_wrap(~ `Freq (kHz)`, scale = "free") +
-  theme_classic() +
-  theme(
-    plot.title = element_text(hjust = 0.5),
-    panel.grid.major.x = element_line(color = "grey80")
-    # panel.grid.minor.x = element_line(color = "grey80"))
-  )
-
-
-# ggsave(paste0("Individuals_", Noise, BG_dB, ".jpg"),
-#        plot = last_plot(), # or an explicit ggplot object name
-#        path = ProjectFolder,
-#        width = 1200, height = 600, units = "px", dpi = 100)
-
-# Rxn Change plot ---------------------------------------------------------
-
-Rxn_change %>%
-  filter(`Inten (dB)` != -100) %>%
-  filter(Condition != "Recovery 2") %>%
-  filter(Condition != "Post 2nd Exposure") %>%
-  filter(!(ID %in% HL_not_done)) %>%
-  filter(`Freq (kHz)` != "0") %>%
-  # filter(Noise == BG_Type & BG_Intensity == BG_dB) %>%
-  ggplot(aes(x = `Inten (dB)`, y = mean)) +
-  geom_hline(yintercept = 0, linetype = "dashed", size = 1.2) +
-  stat_summary(aes(color = Sex, linetype = BG_Intensity, group = interaction(Sex, BG_Intensity)),
-               fun = mean,
-               fun.min = function(x) mean(x) - se(x),
-               fun.max = function(x) mean(x) + se(x),
-               geom = "errorbar", width = 1, position = position_dodge(1)) +
-  stat_summary(aes(color = Sex, shape = BG_Intensity, group = interaction(Sex, BG_Intensity)),
-               fun = mean,
-               geom = "point", position = position_dodge(1), size = 3) +
-  stat_summary(aes(color = Sex, linetype = BG_Intensity, group = interaction(Sex, BG_Intensity)),
-               fun = mean, geom = "line") +
-  labs(title = "Change in Reaction time",
-       x = "Intensity (dB)",
-       y = "Reaction time (ms, mean +/- SE)") +
-  facet_wrap(~ `Freq (kHz)`, scale = "free") +
-  theme_classic() +
-  theme(
-    plot.title = element_text(hjust = 0.5),
-    panel.grid.major.x = element_line(color = "grey80")
-    # panel.grid.minor.x = element_line(color = "grey80"))
-  )
-
-ggsave("Rxn_Change.jpg",
-       plot = last_plot(), # or an explicit ggplot object name
-       path = ProjectFolder,
-       width = 1200, height = 600, units = "px", dpi = 100)
 
 # Rxn Comparison ----------------------------------------------------------
 
-model <- function(df) {
-  # View(df)
-  df = df %>% filter(Type == 1 & Response == "Hit") #%>% View
-  # df %>% .$Condition %>% unique() %>% print
-  lm = if (df$`Stim Source` == "BBN") lm(`R Time (ms)` ~ Condition*`Inten (dB)`, data = df)
-  else lm(`R Time (ms)` ~ Condition*`Inten (dB)`*`Freq (kHz)`, data = df)
-  # summary(lm) %>% print
-  # summary(lm)$coefficients %>% as.data.frame() %>% rownames_to_column(var = "coefficient") %>% tibble %>% print
-  return(lm)
-}
+# ANOVA
+Rxn.aov = aov(mean ~ Condition * `Freq (kHz)` * `Inten (dB)` * BG_Intensity, data = Rxn_overall)
 
-lm_p <- function(df) {
-  result = summary(df)$coefficients %>%
-    as.data.frame() %>%
-    rownames_to_column(., var = "coefficient") %>%
-    tibble %>%
-    mutate(coefficient = gsub("ConditionPost", "Post",coefficient)) %>%
-    print
-  return(result)
-}
+# Parametric check
+Rxn.aov$residuals %>%
+  shapiro.test()
 
-# Analysis_data
-#   ungroup() %>%
-#   unnest(data) %>%
-#   # filter(ID == "Green 1") %>% #print
-#   # filter(BG_Type == "NA") %>%
-#   # filter(Stim == "BBN") %>%
-#   # filter(`Dur (ms)` == 50) %>% #View
-#   # Filter out any individuals that haven't had hearing loss yet
-#   group_by(ID, Condition, BG_Type, BG_Intensity, Stim, `Dur (ms)`) %>%
-#   nest() %>% #print
-#   spread(Condition, data) %>%
-#   # select(-`Post 2nd Exposure`) %>% #print
-#   filter(!map_lgl(`Post HHL`, is.null)) %>% #print
-#   filter(!map_lgl(Baseline, is.null)) %>% #print
-#   gather("Condition", "data", 6:ncol(.)) %>%
-#   unnest(cols = c(data)) %>%
-#   # prep for model
-#   group_by(ID, BG_Type, BG_Intensity, Stim, `Dur (ms)`) %>% #View
-#   select(-data_trimmed, -Blocks_trimmed) %>% #View
-#   nest %>% #print
-#   mutate(lm = map(data, model),
-#          summary = map(lm, ~summary(.x)),
-#          coefficients = map(lm, lm_p),
-#          HHL_estimate = map(coefficients, ~slice(.x, 2:2))) %>%
-#   unnest(HHL_estimate)
-# # mutate(lm = map(data, model),
-# #        summary=list(summary(lm)),
-# #        coefficients = map(lm, lm_p)) %>% print#View
-#
-#
-# # Overall Model
-# model_data <-
-#   Analysis_data
-#   ungroup() %>%
-#   unnest(data) %>%
-#   # filter(ID == "Green 1") %>%
-#   # filter(BG_Type == "NA") %>%
-#   filter(Stim != "BBN") %>%
-#   # filter(`Dur (ms)` == 50) %>% #View
-#   # Filter out any individuals that haven't had hearing loss yet
-#   group_by(ID, Condition, BG_Type, BG_Intensity, Stim, `Dur (ms)`) %>%
-#   nest() %>% #print
-#   spread(Condition, data) %>%
-#   # select(-`Post 2nd Exposure`) %>% #print
-#   filter(!map_lgl(`Post HHL`, is.null)) %>% #print
-#   filter(!map_lgl(Baseline, is.null)) %>% #print
-#   gather("Condition", "data", 6:ncol(.)) %>%
-#   unnest(cols = c(data)) %>%
-#   # prep for model
-#   # group_by(BG_Type, BG_Intensity, Stim, `Dur (ms)`) %>% #View
-#   filter(Type == 1 & Response != "Miss") %>% #print
-#   filter(Condition != "Post 2nd Exposure") %>%
-#   mutate(BG_Intensity = fct_relevel(BG_Intensity, levels = c("NA", "30", "50")))
-#
-# m0.lmer = lmer(`R Time (ms)` ~ 1 + (1|ID), REML = T, data =  model_data)
-# # m1.lmer = lmer(`R Time (ms)` ~ 1 + (1 + ID | Date), REML = T, data =  model_data)
-# m1.lmer = lmer(`R Time (ms)` ~ 1 + `Inten (dB)` + (1|ID), REML = T, data =  model_data)
-# m2.lmer = lmer(`R Time (ms)` ~ 1 + `Inten (dB)`*`Freq (kHz)` + (1|ID), REML = T, data =  model_data)
-# m3.lmer = lmer(`R Time (ms)` ~ 1 + `Inten (dB)`+`Freq (kHz)` + (1|ID), REML = T, data =  model_data)
-# m4.lmer = lmer(`R Time (ms)` ~ 1 + `Inten (dB)`*`Freq (kHz)`*BG_Intensity + (1|ID), REML = T, data =  model_data)
-# m5.lmer = lmer(`R Time (ms)` ~ 1 + `Inten (dB)`*`Freq (kHz)`+ BG_Intensity + (1|ID), REML = T, data =  model_data)
-# m6.lmer = lmer(`R Time (ms)` ~ 1 + `Inten (dB)`*`Freq (kHz)`*BG_Intensity*Condition + (1|ID), REML = T, data =  model_data)
-# m7.lmer = lmer(`R Time (ms)` ~ 1 + `Inten (dB)`*`Freq (kHz)`*BG_Intensity*Condition*Stim + (1|ID), REML = T, data =  model_data)
-# anova(m1.lmer, m0.lmer, test = "Chi")
-# summary(m6.lmer)
+# Summary
+summary(Rxn.aov)
+
+TukeyHSD(Rxn.aov)
