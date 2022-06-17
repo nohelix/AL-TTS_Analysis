@@ -19,9 +19,9 @@ library(writexl)
 
 TTS_Data %>%
   # filter(Condition %in% c("Baseline", "Post HHL", "Post 2nd Exposure")) %>%
-  filter(Condition  == "Post 2nd Exposure") %>%
-  # filter(!(ID %in% HL_not_done)) %>%
-  filter(ID == "Green 5") %>%
+  filter(Condition  == "Post HHL") %>%
+  # filter(Duration == "50ms") %>%
+  filter(ID == "Orange 3") %>%
   group_by(ID, Condition, Duration, Frequency, Intensity, BG_Type, BG_Intensity) %>%
   summarise(Days = n(), Trials = sum(Trials, na.rm = TRUE)) %>%
   arrange(Days)
@@ -30,17 +30,17 @@ TTS_Data %>%
 # Threshold filtering -----------------------------------------------------
 
 TH %>%
-  filter(`Dur (ms)` != "100") %>% 
+  filter(`Dur (ms)` != "100") %>%
   filter(Condition %in% c("Baseline")) %>%
-  filter(!(ID %in% HL_not_done)) %>% 
-  filter(BG_Intensity %in% c("NA", "50")) %>% 
+  filter(!(ID %in% HL_not_done)) %>%
+  filter(BG_Intensity %in% c("NA", "50")) %>%
   # write.table("clipboard", sep="\t", row.names=FALSE) %>%
   View
 
 # Hit/FA Rate -------------------------------------------------------------
 
 TTS_Data %>%
-  filter(!(ID %in% HL_not_done)) %>% 
+  filter(!(ID %in% HL_not_done)) %>%
   # Group by ID, experiment type, etc
   group_by(ID, Sex, Condition, Frequency, BG_Type, BG_Intensity) %>%
   # Summarize for each individual
@@ -48,7 +48,7 @@ TTS_Data %>%
             Trials = mean(Trials, na.rm = T),
             Hit = mean(Hit, na.rm = T),
             FA = mean(FA, na.rm = T)) %>%
-  ungroup() %>%    
+  ungroup() %>%
   # filter(Condition != "Recovery") %>%
   filter(Condition != "Recovery 2") %>%
   filter(Condition != "Post 2nd Exposure") %>% #View
@@ -57,7 +57,7 @@ TTS_Data %>%
   gather(variable, value, Trials, Hit, FA) %>% #print
   ggplot(aes(x = fct_relevel(BG_Intensity, "NA","30","50"), y = value)) +
     geom_boxplot(aes(fill = Condition)) +
-    geom_point(data = . %>% filter(ID == "Orange 3"), 
+    geom_point(data = . %>% filter(ID == "Orange 3"),
                aes(group = Condition), shape = 10,
                position = position_dodge(width = 0.75), size = 3) +
     labs(title = "BBN & 4-32kHz",
@@ -82,7 +82,7 @@ se <- function(x, ...) {sqrt(var(x, ...)/length(x))}
 n_fun <- function(x){
   # print(x)
   return(data.frame(y = mean(x), label = paste0("n = ",length(x))))
-} 
+}
 
 
 #General (Change by Background)
@@ -109,7 +109,7 @@ dprime %>%
        y = "Change in d' following HHL (+/- SE)",
        color = "Go Frequency") +
   facet_wrap(~ BG, scale = "fixed", nrow = 3, strip.position = "top") +
-  theme_classic() + 
+  theme_classic() +
   theme(
     plot.title = element_text(hjust = 0.5),
     panel.grid.major.x = element_line(colour = "grey80")
