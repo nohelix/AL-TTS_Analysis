@@ -306,4 +306,4 @@ Rxn.aov$residuals %>%
 # Summary
 summary(Rxn.aov)
 
-TukeyHSD(Rxn.aov)
+# TukeyHSD(Rxn.aov)
