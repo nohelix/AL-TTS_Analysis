@@ -11,7 +11,7 @@
 # Package loading ---------------------------------------------------------
 
 # data loading/manipulation
-library(readxl); library(tidyverse); library(dplyr); library(tidyr);
+library(readxl); library(tidyverse); library(magrittr); library(dplyr); library(tidyr);
 
 # Analysis
 library(psych); library(psycho); library(lme4); library(lmerTest);
