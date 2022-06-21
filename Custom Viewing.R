@@ -48,7 +48,7 @@ TTS_Data %>%
             Trials = mean(Trials, na.rm = T),
             Hit = mean(Hit, na.rm = T),
             FA = mean(FA, na.rm = T)) %>%
-  ungroup() %>%
+  ungroup() %>% 
   # filter(Condition != "Recovery") %>%
   filter(Condition != "Recovery 2") %>%
   filter(Condition != "Post 2nd Exposure") %>% #View
