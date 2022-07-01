@@ -3,6 +3,8 @@
 # Calculates hit rate, false alarm rate, and trial count from data across conditions
 # Summarized by day and individual
 
+writeLines("Analyzing summary data (trials/hits/FAs)")
+
 # Summarize Hits, misses, FAs, & CRs for each individual by day
 Hit_summary_by_day <-
   Analysis_data %>%
@@ -124,6 +126,8 @@ dprime_calc <- function(df) {
     ) #%>% print
 }
 
+writeLines("Calculating Thresholds")
+
 # Calculate d' and save (along with hit/miss/CR/FA table)
 TH_data <-
   Analysis_data %>%
@@ -212,6 +216,8 @@ dprime <-
 
 
 # Reaction time calculation -----------------------------------------------
+
+writeLines("Calculating average RXN time")
 
 TH_filter <- function(df) {
   # print(df)

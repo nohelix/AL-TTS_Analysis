@@ -64,6 +64,8 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
 
 # Data Processing ---------------------------------------------------------
 
+  writeLines("Loading summary data")
+
   TTS_Data <-
     TTS_Data_Raw %>%
   # Concat tables
@@ -177,6 +179,8 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
     write_xlsx(., "File_Check.xlsx")
   setwd(MainFolder)
 
+  writeLines("Missing files ID'ed")
+
 # Import Reaction time ----------------------------------------------------
 # Imports data from the individual csvs using the listing from previous step
 # data goes into one massive dataframe, Raw_Data
@@ -188,6 +192,8 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
 # The message creation for the log is slow & spammy so I have suppressed the 'New Name' message
 # However, given the total number of files this still take about 1 minute so only run when needed
 # by un-commenting the code
+
+  writeLines("Loading individual run files")
 
   suppressMessages(
   Raw_Data <-
