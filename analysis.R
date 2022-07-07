@@ -11,7 +11,7 @@ Hit_summary_by_day <-
   filter(!(ID %in% HL_not_done)) %>%
   filter(Condition != "Recovery" & Condition != "Recovery") %>%
   group_by(ID, Date, Sex, Condition, Stim, BG_Type, BG_Intensity, Response) %>%
-  summarise(count = n()) %>%
+  summarise(count = n(), .groups = "keep") %>%
   spread(Response, count, fill = 0) %>%
   mutate(Trials = `C.R.` + `F.A.` + Hit + Miss,
          `Hit%` = Hit / (Hit + Miss),
@@ -26,7 +26,8 @@ Hit_summary_by_day <-
   summarise(count = n_distinct(Date),
             Trials = mean(Trials, na.rm = T),
             Hit = mean(`Hit%`, na.rm = T),
-            FA = mean(`FA%`, na.rm = T)) %>%
+            FA = mean(`FA%`, na.rm = T),
+            .groups = "keep") %>%
   ungroup() %>%
   mutate(BG_Intensity = factor(BG_Intensity, levels = c("NA", "30", "50")),
          Stim = factor(Stim, levels = c("BBN", "tone")))
@@ -132,7 +133,7 @@ writeLines("Calculating Thresholds")
 TH_data <-
   Analysis_data %>%
   group_by(ID, Sex, Condition, Stim, BG_Type, BG_Intensity, `Dur (ms)`, Type, `Freq (kHz)`, `Inten (dB)`, Response) %>% #View
-  summarise(count = n()) %>%
+  summarise(count = n(), .groups = "keep") %>%
   spread(Response, count) %>% #View
   group_by(ID, Sex, Condition, Stim, BG_Type, BG_Intensity, `Dur (ms)`) %>% #print
   nest() %>%
@@ -179,7 +180,8 @@ Avg_TH_Condition <-
             "4kHz_avg" = mean(`4kHz`, na.rm = TRUE) %>% round(digits = 0),
             "8kHz_avg" = mean(`8kHz`, na.rm = TRUE) %>% round(digits = 0),
             "16kHz_avg" = mean(`16kHz`, na.rm = TRUE) %>% round(digits = 0),
-            "32kHz_avg" = mean(`32kHz`, na.rm = TRUE) %>% round(digits = 0))
+            "32kHz_avg" = mean(`32kHz`, na.rm = TRUE) %>% round(digits = 0),
+            .groups = "keep")
 
 Avg_TH <-
   TH %>%
@@ -190,7 +192,8 @@ Avg_TH <-
             "4kHz" = mean(`4kHz`, na.rm = TRUE) %>% round(digits = 0),
             "8kHz" = mean(`8kHz`, na.rm = TRUE) %>% round(digits = 0),
             "16kHz" = mean(`16kHz`, na.rm = TRUE) %>% round(digits = 0),
-            "32kHz" = mean(`32kHz`, na.rm = TRUE) %>% round(digits = 0)) %>%
+            "32kHz" = mean(`32kHz`, na.rm = TRUE) %>% round(digits = 0),
+            .groups = "keep") %>%
   gather(Type, TH, "BBN", "4kHz", "8kHz", "16kHz", "32kHz") %>%
   mutate(Type = fct_relevel(Type, "BBN", "4kHz", "8kHz", "16kHz", "32kHz"))
 
@@ -290,7 +293,7 @@ Rxn_daily <-
     group_by(ID, Date, Condition, BG_Type, BG_Intensity, Stim, `Dur (ms)`, `Freq (kHz)`, `Inten (dB)`) %>%
     do(describe(.$`R Time (ms)`)) %>%
     group_by(ID, Condition, BG_Type, BG_Intensity, `Dur (ms)`, `Freq (kHz)`, `Inten (dB)`) %>%
-    summarise(mean = mean(mean))
+    summarise(mean = mean(mean), .groups = "keep")
 
 # React time comparison between averaging methods - basically identical
 Rxn_overall %>%
