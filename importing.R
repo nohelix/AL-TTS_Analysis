@@ -76,6 +76,8 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
       filter(!(Phase %in% c("FA correction", "Maintaince", "Error"))) %>%
   # Filter out Training and retraining
       filter(!(Phase %in% c("Training", "Retraining", "Training, tones", "Reset"))) %>%
+  # Filter out Tone Discrimination
+    filter(!(Phase %in% c("Discrimination training", "Tone discrimination training", "Tone discrimination", "Discrimination"))) %>%
   # Filter out Post-ABR
       filter(!(Phase %in% c("Post ABR", "Post ABR, post-HL", "Post ABR, post-HL2"))) %>%
   # if_else statement to detect grouping - either pre-hearing loss (i.e. Baseline), post 1st exposure or post 2nd exposure
@@ -193,7 +195,7 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
 # However, given the total number of files this still take about 1 minute so only run when needed
 # by un-commenting the code
 
-  writeLines("\nLoading individual run files")
+  writeLines("Loading individual run files")
 
   suppressMessages(
   Raw_Data <-
