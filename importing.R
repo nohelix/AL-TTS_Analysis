@@ -193,7 +193,7 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
 # However, given the total number of files this still take about 1 minute so only run when needed
 # by un-commenting the code
 
-  writeLines("Loading individual run files")
+  writeLines("\nLoading individual run files")
 
   suppressMessages(
   Raw_Data <-
