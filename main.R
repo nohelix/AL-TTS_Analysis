@@ -36,7 +36,7 @@ range = "A3:X600"
 
 ProjectFolder = 'C:/Users/Noelle/Box/Auerbach Lab (Personal)/TTS Analysis'
 
-HL_not_done = c("Orange 4", "Orange 5", "Green 2", "Green 3")
+HL_not_done = c("Green 2")
 
 min_blocks = 5
 
