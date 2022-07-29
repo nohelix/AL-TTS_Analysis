@@ -54,7 +54,7 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
 # data exceds that, it will not be loaded.
 
   # Load TTS spreadsheet (hard coded)
-  TTS_RatID_list <- excel_sheets("Noise_TTS_Gp1_Green-Orange.xlsx") %>% .[1:13] %>% as.list() %>% .[. != "Orange 11" & . != "Orange 12"]
+  TTS_RatID_list <- excel_sheets("Noise_TTS_Gp1_Green-Orange.xlsx") %>% .[1:13] %>% as.list() %>% .[. != "Orange 11" & . != "Orange 12" & . != "Green 11" & . != "Green 12"]
 
   # The message creation for the log is slow & spammy so I have suppressed the 'New Name' message
   suppressMessages(
@@ -181,7 +181,7 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
     write_xlsx(., "File_Check.xlsx")
   setwd(MainFolder)
 
-  writeLines("Missing files ID'ed")
+  writeLines("\n\nMissing files ID'ed")
 
 # Import Reaction time ----------------------------------------------------
 # Imports data from the individual csvs using the listing from previous step
