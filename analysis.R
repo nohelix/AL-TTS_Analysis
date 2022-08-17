@@ -213,6 +213,8 @@ dprime <-
                         BG_Type == "PNK" & BG_Intensity == "30" ~ "30dB Pink Noise Background",
                         BG_Type == "PNK" & BG_Intensity == "50" ~ "50dB Pink Noise Background",
                         BG_Type == "WN" & BG_Intensity == "50" ~ "50dB White Noise Background",
+                        BG_Type == "PKN" & BG_Intensity == "30" ~ "30dB Pink Noise Background",
+                        BG_Type == "PKN" & BG_Intensity == "50" ~ "50dB Pink Noise Background",
                         TRUE ~ "ISSUE") %>%
            fct_relevel("Quiet", "30dB Pink Noise Background", "50dB Pink Noise Background", "50dB White Noise Background")) %>%
   gather(Condition, dprime, "dprime_change", "Baseline", `Post HHL`)
