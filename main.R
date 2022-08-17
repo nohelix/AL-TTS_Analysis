@@ -72,3 +72,10 @@ Analysis_data = Data_no1st %>%
 
 source("~/GitHub/AL-TTS_Analysis/analysis.R")
 
+# Analysis ----------------------------------------------------------------
+# Graph Hit, FA and Trial Count from summary data
+# calculate hearing threshold (from all data) and remove any trials below hearing level.
+# ISSUE: Plots don't show.
+
+source("~/GitHub/AL-TTS_Analysis/graphing.R")
+
