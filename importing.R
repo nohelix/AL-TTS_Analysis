@@ -171,6 +171,7 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
     filter(is.na(FileName_complete)) %>%
   # .mat files from 9-22-2021 and earlier are in the old format and can not be exported currently
     filter(Date > "2021-9-22") %>%
+    filter(Date < Sys.Date()) %>%
     arrange(Date) %>%
     View
 
