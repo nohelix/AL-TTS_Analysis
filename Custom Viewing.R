@@ -20,12 +20,46 @@ library(writexl)
 TTS_Data %>%
   # filter(Condition %in% c("Baseline", "Post HHL", "Post 2nd Exposure")) %>%
   filter(Condition  == "Post HHL") %>%
-  # filter(Duration == "50ms") %>%
-  filter(ID == "Orange 3") %>%
+  filter(Duration == "50ms") %>%
+  filter(ID == "Orange 4") %>%
   group_by(ID, Condition, Duration, Frequency, Intensity, BG_Type, BG_Intensity) %>%
   summarise(Days = n(), Trials = sum(Trials, na.rm = TRUE)) %>%
   arrange(Days)
 
+# Mixed vs. Alone BBN duration rxn ----------------------------------------
+
+Analysis_data %>%
+  filter(Type == 1 & Response == "Hit") %>%
+  filter(`Inten (dB)` != -100) %>%
+  filter(Stim == "BBN" & Condition == "Baseline") %>%
+  # Filter by TH table so that only reaction times above thresholds are included
+  left_join(TTS_Data %>%
+              filter(Frequency == "BBN" & Condition == "Baseline") %>%
+              select(Date, ID, Intensity, Duration) %>%
+              rename(Range = Intensity),
+            by = c("Date", "ID")) %>%
+  group_by(ID, Sex, Condition, Stim, Duration, `Dur (ms)`, `Inten (dB)`) %>%
+  summarise(Rxn = mean(`R Time (ms)`)) %>%
+  mutate(Duration = fct_recode(Duration, Alone = "50ms", Alone = "300ms", Mixed = "50-300ms"),
+         `Dur (ms)` = fct_recode(as.factor(`Dur (ms)`), "50ms" = "50", "100ms" = "100", "300ms" = "300"),
+         `Dur (ms)` = fct_relevel(`Dur (ms)`, c("50ms", "100ms", "300ms"))) %>%
+  filter(`Inten (dB)` >= 30) %>%
+  ggplot(aes(x = `Inten (dB)`, y = Rxn, color = `Dur (ms)`, group = `Dur (ms)`)) +
+      stat_summary(fun = mean,
+                   fun.min = function(x) mean(x) - se(x),
+                   fun.max = function(x) mean(x) + se(x),
+                   geom = "errorbar", width = 3) +
+      stat_summary(fun = mean, geom = "point", size = 3) +
+      stat_summary(fun = mean, geom = "line") +
+      scale_x_continuous(limits = c(28, 92), breaks = c(30, 50, 70, 90)) +
+      labs(x = "Sound Intensity (dB)",
+           y = "Reaction time (ms)") +
+      facet_wrap(~ Duration) +
+      theme_classic() +
+      theme(
+        text = element_text(size = 12),
+        panel.grid.major.x = element_line(color = "white")
+      )
 
 # Threshold filtering -----------------------------------------------------
 
@@ -48,7 +82,7 @@ TTS_Data %>%
             Trials = mean(Trials, na.rm = T),
             Hit = mean(Hit, na.rm = T),
             FA = mean(FA, na.rm = T)) %>%
-  ungroup() %>% 
+  ungroup() %>%
   # filter(Condition != "Recovery") %>%
   filter(Condition != "Recovery 2") %>%
   filter(Condition != "Post 2nd Exposure") %>% #View
