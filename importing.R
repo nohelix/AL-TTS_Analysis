@@ -75,7 +75,7 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
   # Filter out FA correction, Maintenance, & Errors
       filter(!(Phase %in% c("FA correction", "Maintaince", "Error"))) %>%
   # Filter out Training and retraining
-      filter(!(Phase %in% c("Training", "Retraining", "Training, tones", "Reset"))) %>%
+      filter(!(Phase %in% c("Training", "Retraining", "Training, tones", "Reset", "BBN Training"))) %>%
   # Filter out Tone Discrimination
     filter(!(Phase %in% c("Discrimination training", "Tone discrimination training", "Tone discrimination", "Discrimination"))) %>%
   # Filter out Post-ABR
