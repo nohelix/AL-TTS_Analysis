@@ -124,6 +124,26 @@ ggsave("11-13kHz_HHL_W1lat.jpg",
        plot = last_plot(), # or an explicit ggplot object name
        path = ProjectFolder)
 
+Graph_detailed %>%
+  ggplot(aes(x = Inten, y = `W1 amp (uV)`, color = Condition, group = Condition)) +
+  stat_summary(fun = mean,
+               fun.min = function(x) mean(x) - se(x),
+               fun.max = function(x) mean(x) + se(x),
+               geom = "errorbar", width = 3, position = position_dodge(1)) +
+  stat_summary(fun = mean, geom = "point", position = position_dodge(1), size = 3) +
+  stat_summary(fun = mean, geom = "line") +
+  scale_x_continuous(limits = c(10, 100), breaks = c(20, 40, 60, 80, 100)) +
+  labs(x = "Sound Intensity (dB)",
+       y = expression("Wave 1 Amplitued (\u00b5V)")) +
+  facet_wrap( ~ Freq, nrow = 2) +
+  theme_classic() +
+  theme(
+    text = element_text(size = 12),
+    panel.grid.major.x = element_line(color = "white"),
+    legend.position = c(0.9, 0.2)
+    )
+
+
 # W1 Amp ANOVA -------------------------------------------------------------------
 W1amp.aov <- aov(LambertW::Gaussianize(AOV.data$W1) ~ Condition * Inten * Freq,
                  data = AOV.data)
@@ -233,10 +253,10 @@ Graph_detailed  %>%
 # Thresholds --------------------------------------------------------------
 
 ABR.TH_short <- read_excel("C:/Users/Noelle/Box/ABR recordings/ABR Results/Noelle/11-13kHz HHL/Summary.xlsx",
-                      sheet = "4-32_Thresholds")
+                      sheet = "4-32_Thresholds", na = "NA")
 
 ABR.TH_Detailed <- read_excel("C:/Users/Noelle/Box/ABR recordings/ABR Results/Noelle/11-13kHz HHL/Summary.xlsx",
-                              sheet = "4-48_Thresholds")
+                              sheet = "4-48_Thresholds", na = "NA")
 
 ABR.TH = ABR.TH_Detailed %>%
           bind_rows(ABR.TH_short)
@@ -255,10 +275,14 @@ ABR.TH %>%
 
 ABR.TH.aov = ABR.TH  %>%
   filter(Freq %in% c("4", "8", "16", "32", "BBN")) %>%
-  gather(key = "Measure", value = "TH", 6:7)
+  gather(key = "Measure", value = "TH", 6:7) %>%
+  filter(!(is.na(TH)))
 
-TH.aov <- aov(LambertW::Gaussianize(ABR.TH.aov$TH) ~ Condition * Freq + Measure,
-                 data = ABR.TH.aov)
+# TH.aov <- aov(LambertW::Gaussianize(ABR.TH.aov$TH) ~ Condition * Freq + Measure,
+#                  data = ABR.TH.aov)
+
+TH.aov <- aov(TH ~ Condition * Freq + Measure,
+              data = ABR.TH.aov)
 
 shapiro.test(TH.aov$residuals)$p.value
 
