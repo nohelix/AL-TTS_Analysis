@@ -275,14 +275,15 @@ ABR.TH %>%
 
 ABR.TH.aov = ABR.TH  %>%
   filter(Freq %in% c("4", "8", "16", "32", "BBN")) %>%
-  gather(key = "Measure", value = "TH", 6:7) %>%
+  # column 6 = RMS cuttoff, column 7 = Wave pick cutoff
+  gather(key = "Measure", value = "TH", 7) %>%
   filter(!(is.na(TH)))
 
-# TH.aov <- aov(LambertW::Gaussianize(ABR.TH.aov$TH) ~ Condition * Freq + Measure,
-#                  data = ABR.TH.aov)
+TH.aov <- aov(LambertW::Gaussianize(ABR.TH.aov$TH) ~ Condition * Freq,
+                 data = ABR.TH.aov)
 
-TH.aov <- aov(TH ~ Condition * Freq + Measure,
-              data = ABR.TH.aov)
+# TH.aov <- aov(TH ~ Condition * Freq,
+#               data = ABR.TH.aov)
 
 shapiro.test(TH.aov$residuals)$p.value
 
