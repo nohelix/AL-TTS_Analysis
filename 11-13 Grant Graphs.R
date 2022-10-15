@@ -98,6 +98,11 @@ shapiro.test(RMS.aov$residuals)$p.value
 
 summary(RMS.aov)
 
+TukeyHSD(RMS.aov, "Condition", ordered = TRUE) %>% tidy() %>%
+  select(-null.value, -conf.low, -conf.high) %>%
+  mutate(adj.p.value = round(adj.p.value, digits = 4),
+         sig = stars.pval(adj.p.value))
+
 # W1 Grant Graph ---------------------------------------------------------------
 # Wave 1 Amplitude for BBN to match Fmr1 KO result.
 
@@ -167,29 +172,47 @@ TukeyHSD(W1amp.aov, "Condition", ordered = TRUE) %>% tidy() %>%
 
 # 80dB Graph ---------------------------------------------------------------
 
+Data = To_Graph
+Freq = "80"
+
 To_Graph_Table.1week <-
-To_Graph %>%
+  Data %>%
   mutate(Freq = fct_relevel(Freq, c("4", "8", "16", "32", "BBN"))) %>%
-  filter(Inten == "80") %>%
+  filter(Inten == !!Freq) %>%
   filter(Condition %in% c("Baseline", "1 week")) %>%
   group_by(Freq) %>%
   summarise(p = wilcox.test(`W1 amp (uV)` ~ Condition,
                             exact = FALSE,
                             alternative = "greater")$p.value %>% round(digits = 3)) %>%
   mutate(BH = p.adjust(p, method = "BH") %>% round(digits = 3),
-         Sig = stars.pval(`BH`))
+         Sig = stars.pval(`BH`)) %>%
+  select(-p)
 
 To_Graph_Table.2week <-
-  To_Graph %>%
+  Data %>%
   mutate(Freq = fct_relevel(Freq, c("4", "8", "16", "32", "BBN"))) %>%
-  filter(Inten == "80") %>%
+  filter(Inten == !!Freq) %>%
   filter(Condition %in% c("Baseline", "2 week")) %>%
   group_by(Freq) %>%
   summarise(p = wilcox.test(`W1 amp (uV)` ~ Condition,
                             exact = FALSE,
                             alternative = "greater")$p.value %>% round(digits = 3)) %>%
   mutate(BH = p.adjust(p, method = "BH") %>% round(digits = 3),
-         Sig = stars.pval(`BH`))
+         Sig = stars.pval(`BH`)) %>%
+  select(-p)
+
+To_Graph_Table.5week <-
+  Data %>%
+  mutate(Freq = fct_relevel(Freq, c("4", "8", "16", "32", "BBN"))) %>%
+  filter(Inten == !!Freq) %>%
+  filter(Condition %in% c("Baseline", "5 week")) %>%
+  group_by(Freq) %>%
+  summarise(p = wilcox.test(`W1 amp (uV)` ~ Condition,
+                            exact = FALSE,
+                            alternative = "greater")$p.value %>% round(digits = 3)) %>%
+  mutate(BH = p.adjust(p, method = "BH") %>% round(digits = 3),
+         Sig = stars.pval(`BH`)) %>%
+  select(-p)
 
 # wilcox.test(`W1 amp (uV)` ~ Condition,
 #             exact = FALSE, correct = FALSE,
@@ -198,8 +221,8 @@ To_Graph_Table.2week <-
 # )
 
 
-To_Graph  %>%
-  filter(Inten == "80") %>%
+Data  %>%
+  filter(Inten == !!Freq) %>%
   mutate(Freq = fct_relevel(Freq, c("4", "8", "16", "32", "BBN"))) %>%
   ggplot(aes(x = Condition, y = `W1 amp (uV)`, color = Freq, group = Freq)) +
     stat_summary(fun = mean,
@@ -218,6 +241,9 @@ To_Graph  %>%
     annotate(geom = 'table',
              x = 5.5, y = 0.1,
              label = list(To_Graph_Table.2week)) +
+    annotate(geom = 'table',
+             x = 6.5, y = 0.1,
+             label = list(To_Graph_Table.5week)) +
     theme_classic() +
     theme(
       text = element_text(size = 12),
