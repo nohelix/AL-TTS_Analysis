@@ -167,13 +167,13 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
     relocate(ActualFile, .after = File)
 
   # Missing raw files, all missing files do not open for export in our current Behavior_Analysis script
-  File_list_verify %>%
+  missing_files = File_list_verify %>%
     filter(is.na(FileName_complete)) %>%
   # .mat files from 9-22-2021 and earlier are in the old format and can not be exported currently
     filter(Date > "2021-9-22") %>%
     filter(Date < Sys.Date()) %>%
-    arrange(Date) %>%
-    View
+    arrange(Date)
+  View(missing_files)
 
   # ID files with unexpected names
   setwd(ProjectFolder)
@@ -225,13 +225,12 @@ read_excel_allsheets <- function(filename, range, sheetlist, tibble = FALSE) {
   # Sanity check that Trials and the actual line count match
   # NOTE: this required manually renaming a file (Orange5_Orange5_4-32kHz_MIXdB_50ms_4s_20220420-130546_BOX#001_raw_data.csv)
   # as the Orange5_Green5 seemed to be causing issues
-  Raw_Data %>%
+  trail_count_issues = Raw_Data %>%
     group_by(ID, Date) %>%
     count() %>%
     left_join(TTS_Data, ., by = c("Date", "ID")) %>%
     select(ID, Date, Trials, n) %>%
-    filter(Trials != n) %>%
-    View()
+    filter(Trials != n)
 
 
 # Sample selection --------------------------------------------------------
