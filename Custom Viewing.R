@@ -87,7 +87,7 @@ shapiro.test(Test.aov$residuals)
 
 summary(Test.aov)
 
-TukeyHSD(Test.aov, "Dur") %>% tidy() %>% mutate(sig = gtools::stars.pval(adj.p.value))
+TukeyHSD(Test.aov, "Dur") %>% broom::tidy() %>% mutate(sig = gtools::stars.pval(adj.p.value))
 
 # Missing raw files -------------------------------------------------------
 File_list_verify %>%
@@ -122,15 +122,16 @@ TTS_Data %>%
   ungroup() %>%
   # filter(Condition != "Recovery") %>%
   filter(Condition != "Recovery 2") %>%
+  filter(Condition != "Recovery") %>%
   filter(Condition != "Post 2nd Exposure") %>% #View
   # filter(Frequency == "BBN") %>%
   # filter(Frequency == "4-32kHz") %>%
   gather(variable, value, Trials, Hit, FA) %>% #print
   ggplot(aes(x = fct_relevel(BG_Intensity, "NA","30","50"), y = value)) +
     geom_boxplot(aes(fill = Condition)) +
-    geom_point(data = . %>% filter(ID == "Orange 3"),
-               aes(group = Condition), shape = 10,
-               position = position_dodge(width = 0.75), size = 3) +
+    # geom_point(data = . %>% filter(ID == "Orange 3"),
+    #            aes(group = Condition), shape = 10,
+    #            position = position_dodge(width = 0.75), size = 3) +
     labs(title = "BBN & 4-32kHz",
          x = "Background Intensity (dB)") +
     facet_wrap(.~ fct_relevel(variable, "Trials", "Hit", "FA"), scales = "free_y") +
