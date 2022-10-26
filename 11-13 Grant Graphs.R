@@ -29,7 +29,9 @@ Graph_detailed = Graph_detailed %>%
 
 To_Graph = Graph_detailed %>%
   filter(Freq %in% c("4", "8", "16", "32", "BBN")) %>%
-  bind_rows(Graph)
+  bind_rows(Graph) %>%
+  mutate(Condition = str_replace_all(Condition, "[45] week", "4-5 week"),
+         Condition = fct_relevel(Condition, "Baseline", "Hearing Loss", "1 day", "1 week", "2 week", "4-5 week"))
 
 
 To_Graph %>%
@@ -84,9 +86,18 @@ Graph_detailed  %>%
     legend.position = c(0.9, 0.2)
   )
 
-# RMS ANOVA -------------------------------------------------------------------
+ggsave("11-13kHz_HHL_RMS_4-48kHz.jpg",
+       plot = last_plot(), # or an explicit ggplot object name
+       path = ProjectFolder)
 
+# RMS ANOVA -------------------------------------------------------------------
 AOV.data <- To_Graph %>%
+            group_by(ID, Freq, Inten, Condition) %>%
+            summarise(RMS = mean(RMS),
+                      W1 = mean(`W1 amp (uV)`))
+
+
+AOV.data.detailed <- Graph_detailed %>%
               group_by(ID, Freq, Inten, Condition) %>%
               summarise(RMS = mean(RMS),
                         W1 = mean(`W1 amp (uV)`))
@@ -149,6 +160,10 @@ Graph_detailed %>%
     )
 
 
+ggsave("11-13kHz_HHL_W1lat_4-48kHz.jpg",
+       plot = last_plot(), # or an explicit ggplot object name
+       path = ProjectFolder)
+
 # W1 Amp ANOVA -------------------------------------------------------------------
 W1amp.aov <- aov(LambertW::Gaussianize(AOV.data$W1) ~ Condition * Inten * Freq,
                  data = AOV.data)
@@ -205,7 +220,7 @@ To_Graph_Table.5week <-
   Data %>%
   mutate(Freq = fct_relevel(Freq, c("4", "8", "16", "32", "BBN"))) %>%
   filter(Inten == !!Freq) %>%
-  filter(Condition %in% c("Baseline", "5 week")) %>%
+  filter(Condition %in% c("Baseline", "4-5 week")) %>%
   group_by(Freq) %>%
   summarise(p = wilcox.test(`W1 amp (uV)` ~ Condition,
                             exact = FALSE,
@@ -236,19 +251,19 @@ Data  %>%
          color = "Frequency",
          title = "Wave 1 Amplitude at 80dB") +
     annotate(geom = 'table',
-             x = 4.5, y = 0.1,
+             x = 4.5, y = 0.0,
              label = list(To_Graph_Table.1week)) +
     annotate(geom = 'table',
-             x = 5.5, y = 0.1,
+             x = 5.5, y = 0.0,
              label = list(To_Graph_Table.2week)) +
     annotate(geom = 'table',
-             x = 6.5, y = 0.1,
+             x = 6.5, y = 0.0,
              label = list(To_Graph_Table.5week)) +
     theme_classic() +
     theme(
       text = element_text(size = 12),
       panel.grid.major.x = element_line(color = "white"),
-      legend.position = c(0.9, 0.8)
+      legend.position = c(0.8, 0.9)
     )
 
 ggsave("11-13kHz_HHL_80dB.jpg",
@@ -320,3 +335,8 @@ TukeyHSD(TH.aov, "Condition", ordered = TRUE) %>% tidy() %>%
   mutate(adj.p.value = round(adj.p.value, digits = 4),
          sig = stars.pval(adj.p.value))
 
+
+
+# Save data ---------------------------------------------------------------
+
+save(Graph, Graph_detailed, To_Graph, file = "11-13 ABR data.Rdata")
