@@ -21,7 +21,8 @@ TTS_Data %>%
   # filter(Condition %in% c("Baseline", "Post HHL", "Post 2nd Exposure")) %>%
   filter(Condition  == "Post HHL") %>%
   filter(Duration == "50ms") %>%
-  filter(ID == "Orange 4") %>%
+  filter(ID == "Orange 5") %>%
+  mutate(BG_Type = gsub("PNK", "PKN", BG_Type)) %>%
   group_by(ID, Condition, Duration, Frequency, Intensity, BG_Type, BG_Intensity) %>%
   summarise(Days = n(), Trials = sum(Trials, na.rm = TRUE)) %>%
   arrange(Days)
@@ -44,7 +45,7 @@ Data_no1st %>%
   mutate(Duration = fct_recode(Duration, Alone = "50ms", Alone = "100ms", Alone = "300ms", Mixed = "50-300ms"),
          `Dur (ms)` = as.factor(`Dur (ms)`),
          `Dur (ms)` = fct_relevel(`Dur (ms)`, c("50", "100", "300"))) %>%
-  filter(`Inten (dB)` >= 30 & `Inten (dB)` <= 80 &!(`Inten (dB)` %in% c(25, 35, 45))) %>%
+  filter(`Inten (dB)` %in% c(25, 30, 35, 40, 45, 50, 60, 70, 80)) %>%
   ggplot(aes(x = `Inten (dB)`, y = Rxn, color = `Dur (ms)`, group = `Dur (ms)`)) +
       stat_summary(fun = mean,
                    fun.min = function(x) mean(x) - se(x),
@@ -88,6 +89,52 @@ shapiro.test(Test.aov$residuals)
 summary(Test.aov)
 
 TukeyHSD(Test.aov, "Dur") %>% broom::tidy() %>% mutate(sig = gtools::stars.pval(adj.p.value))
+
+
+# Duration Effect matching Fmr1 & Tsc2 ------------------------------------
+
+Data_no1st %>%
+  filter(Type == 1 & Response == "Hit") %>%
+  filter(`Inten (dB)` != -100) %>%
+  filter(Stim == "BBN" & Condition == "Baseline") %>%
+  # Filter by TH table so that only reaction times above thresholds are included
+  left_join(TTS_Data %>%
+              filter(Frequency == "BBN" & Condition == "Baseline") %>%
+              select(Date, ID, Intensity, Duration) %>%
+              rename(Range = Intensity),
+            by = c("Date", "ID")) %>%
+  group_by(ID, Sex, Condition, Stim, Duration, `Dur (ms)`, `Inten (dB)`) %>%
+  summarise(Rxn = mean(`R Time (ms)`)) %>%
+  mutate(Duration = fct_recode(Duration, Alone = "50ms", Alone = "100ms", Alone = "300ms", Mixed = "50-300ms"),
+         `Dur (ms)` = as.factor(`Dur (ms)`),
+         `Dur (ms)` = fct_relevel(`Dur (ms)`, c("50", "100", "300"))) %>%
+  filter(ID %in% c("Orange 11", "Orange 12", "Green 11", "Green 12") & Duration == "Alone") %>%
+  rename(Intensity = `Inten (dB)`) %>%
+  filter(Intensity %in% c(25, 30, 35, 40, 45, 50, 60, 70, 80)) %>%
+  ggplot(aes(x = Intensity, y = Rxn)) +
+  # geom_point(aes(group = ID, color = Genotype), alpha = 0.3)+
+  # geom_line(aes(group = ID, color = Genotype), alpha = 0.3)+
+  stat_summary(aes(color = `Dur (ms)`, group = `Dur (ms)`),
+               fun = mean,
+               fun.min = function(x) mean(x) - se(x),
+               fun.max = function(x) mean(x) + se(x),
+               geom = "errorbar", width = 1, position = position_dodge(0.1)) +
+  stat_summary(aes(shape = `Dur (ms)`, color = `Dur (ms)`, group = `Dur (ms)`),
+               fun = mean,
+               geom = "point", position = position_dodge(0.1), size = 3) +
+  stat_summary(aes(color = `Dur (ms)`, group = `Dur (ms)`), fun = mean, geom = "line") +
+  labs(title = "SAS SD effect of Duration on Alone",
+       x = "Intensity (dB)",
+       y = "Reaction time (ms, mean +/- SE)") +
+  scale_x_continuous(breaks = seq(20, 80, by = 10)) +
+  scale_y_continuous(limits=c(100, 450)) +
+  # facet_wrap(~ `Dur (ms)` , ncol = 1) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    panel.grid.major.x = element_line(color = rgb(235, 235, 235, 255, maxColorValue = 255))
+  )
+
 
 # Missing raw files -------------------------------------------------------
 File_list_verify %>%
