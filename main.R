@@ -36,7 +36,7 @@ range = "A3:X600"
 
 ProjectFolder = 'C:/Users/Noelle/Box/Auerbach Lab (Personal)/TTS Analysis'
 
-HL_not_done = c("Green 2", "Orange 11", "Orange 12", "Green 11", "Green 12")
+HL_not_done = c("Green 2")
 
 min_blocks = 5
 
@@ -48,7 +48,7 @@ setwd(MainFolder)
 
 # Clean Environment & Import Data -----------------------------------------
 # errors, post ABRs and 'maintenance' days are automatically removed
-source("~/GitHub/AL-TTS_Analysis/importing.R")
+source("Z:/GitHub/AL-TTS_Analysis/importing.R")
 
 
 # Dataset Picker ----------------------------------------------------------
@@ -70,12 +70,12 @@ Analysis_data = Data_no1st %>%
 # calculate hearing threshold (from all data) and remove any trials below hearing level.
 # ISSUE: Plots don't show.
 
-source("~/GitHub/AL-TTS_Analysis/analysis.R")
+source("Z:/GitHub/AL-TTS_Analysis/analysis.R")
 
 # Graphing ----------------------------------------------------------------
 # Graph Hit, FA and Trial Count from summary data
 # calculate hearing threshold (from all data) and remove any trials below hearing level.
 # ISSUE: Plots don't show.
 
-source("~/GitHub/AL-TTS_Analysis/graphing.R")
+source("Z:/GitHub/AL-TTS_Analysis/graphing.R")
 
